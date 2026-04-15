@@ -22,7 +22,6 @@ Die Anwendung soll drei fachliche Bereiche abdecken:
 - Fehlermeldungen dürfen schlicht in HTML/PHP ausgegeben werden
 - Schutz vor `SQL-Injection` und `Cross-Site-Scripting` ist verpflichtend
 - Datenbankoperationen müssen konsistent umgesetzt werden
-- `.inc.php` nur für tatsächlich inkludierte Dateien verwenden
 - reine PHP-Seiten ohne fachlichen Inhalt, die nur weiterleiten, sollen vermieden werden
 
 ## 3. Benutzerrollen
@@ -314,42 +313,33 @@ Der aktuelle Code setzt bereits einen ersten Teil der Anwendung um.
 
 ### Bereits umgesetzt
 
-- einfacher Frontcontroller in `public/index.php`
-- Routing nicht mehr direkt in HTML und Geschäftslogik vermischt, sondern über Controller getrennt
-- gemeinsame Authentifizierung für `Teamchef` und `Veranstalter`
-- beim Erstellen eines Teams wird der `Teamchef` direkt mit angelegt
-- Registrierung für `Veranstalter`
-- Login mit Passwort-Hash-Prüfung
-- Session-basierte Anmeldung
-- CSRF-Schutz für Formulare
-- einfaches Dashboard nach erfolgreichem Login
+- getrennte Seitendateien für Startseite, Authentifizierung, Dashboard und Logout
+- rein statische HTML-Mockups in den bestehenden `.php`-Dateien
+- keine aktive PHP-Logik für Datenbank, Sessions, Login oder Registrierung
 
 ### Aktuelle Projektstruktur
 
 - `public/index.php`
-  Einstiegspunkt der Anwendung
-- `src/config/bootstrap.php`
-  Laden der Grundfunktionen, Sessions und Hilfsfunktionen
-- `src/config/database.php`
-  Aufbau der PDO-Datenbankverbindung
-- `src/controllers/AppController.php`
-  zentrales Routing auf Controller-Ebene
-- `src/controllers/HomeController.php`
   Startseite
-- `src/controllers/AuthController.php`
-  Registrierung, Login, Logout
-- `src/controllers/DashboardController.php`
+- `public/auth.php`
+  Registrierung und Anmeldung
+- `public/dashboard.php`
   geschützter Bereich nach Login
-- `src/models/AuthService.php`
-  Datenbanklogik für Registrierung und Login
-- `src/views/layout/main.php`
-  gemeinsames HTML-Grundlayout
-- `src/views/home/index.php`
-  Startseite
-- `src/views/auth/form.php`
-  Auth-Formular
-- `src/views/dashboard/index.php`
-  Dashboard
+- `public/logout.php`
+  Logout
+
+Die aktuelle Struktur verwendet bewusst nur Seitendateien unter `public/`.
+Die Dateien enthalten aktuell nur HTML-Inhalte und dienen als Platzhalter für die spätere Umsetzung.
+
+### Bewusst entfernt
+
+- separate Controller-Dateien wie `HomeController`, `AuthController` oder `DashboardController`
+- separate View-Struktur unter `src/views`
+- zusätzliches Routing über Controller-Klassen
+- separate Service-Dateien wie `AuthService.php`
+- separate Bootstrap- oder Datenbank-Hilfsdateien
+- jede aktive PHP-Logik für Datenbankzugriffe
+- jede aktive PHP-Logik für Login, Logout, Sessions oder Formularverarbeitung
 
 ### Noch nicht umgesetzt
 
@@ -365,3 +355,10 @@ Der aktuelle Code setzt bereits einen ersten Teil der Anwendung um.
 ### Regel für weitere Änderungen
 
 Wenn neue Funktionen gebaut werden, soll die Projektskizze anschließend immer mit aktualisiert werden, damit fachlicher Stand, Code-Struktur und bereits umgesetzte Phasen synchron bleiben.
+
+Zusätzlich gilt:
+
+- keine unnötigen Controller-Dateien
+- keine künstliche MVC-Struktur ohne echten Mehrwert
+- mehrere Seiten lieber als klare einzelne Dateien unter `public/` statt alles in `index.php`
+- aktuell nur statische HTML-Seiten, bis die nächste Umsetzungsphase definiert ist
