@@ -7,16 +7,13 @@
 </head>
 <body>
     <h1>Willkommen zum Stadtradeln</h1>
-    <p>Bitte wähle eine der folgenden Optionen:</p>
+    <p><b>Bitte wähle eine der folgenden Optionen:</b></p>
 
     <ul>
-        <li><a href="/auth.php?mode=register&role=teamchef">Team erstellen</a></li>
-        <li><a href="/auth.php?mode=login&role=teamchef">Teamchef anmelden</a></li>
-        <li><a href="/auth.php?mode=register&role=veranstalter">Veranstalter registrieren</a></li>
-        <li><a href="/auth.php?mode=login&role=veranstalter">Veranstalter anmelden</a></li>
+        <li><a href="team_erstellen.php">Team erstellen</a></li>
+        <li><a href="teamchef_anmelden.php">Teamchef anmelden</a></li>
+        <li><a href="veranstalter_einloggen.php">Veranstalter einloggen</a></li>
     </ul>
-
-    <p>Hinweis: Dies ist aktuell eine statische HTML-Seite ohne PHP-Logik.</p>
     <hr>
 </body>
 </html>
