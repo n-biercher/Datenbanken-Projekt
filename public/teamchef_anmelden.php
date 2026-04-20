@@ -1,4 +1,8 @@
 <!-- Nicolas Biercher Beginn -->
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -55,7 +59,14 @@ class TeamchefLogin extends Dbh
         }
 
         if (password_verify($kennwort, $user['Kennwort'])) {
-            echo "Willkommen " . htmlspecialchars($user['TeamchefLoginName']);
+
+            $_SESSION['teamchef_loginname'] = $user['TeamchefLoginName'];
+            $_SESSION['vorname'] = $user['Vorname'];
+            $_SESSION['nachname'] = $user['Nachname'];
+
+            header("Location: index.php");
+            exit();
+
         } else {
             echo "Falsches Passwort";
         }
