@@ -53,8 +53,8 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
                 <input id="ort" name="ort" placeholder="Ort des Rennens">
             </p>
             <p>
-            <label for="kilometer">Kilometer</label><br>
-            <input id="kilometer" name="kilometer" placeholder="Zu fahrende Kilometer">
+                <label for="kilometer">Kilometer</label><br>
+                <input id="kilometer" name="kilometer" placeholder="Zu fahrende Kilometer"> Km
             </p>
             <p>
                 <label for="hoehenmeter">Höhenmeter</label><br>
@@ -102,10 +102,22 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
         $hoehenmeter = $_POST['hoehenmeter'];
         $maximale_steigung = $_POST['maximale_steigung'];
 
-        $rennen_anlegen = new Rennen();
-        $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
-    }
+        if ($maximale_steigung > 100) {
+            echo "Fehler: Maximale Steigung darf nicht größer als 100% sein!";
 
+        } elseif (!is_numeric($kilometer)) {
+
+            echo "<p style='color:red;'>Kilometer muss eine Zahl sein!</p>";
+
+        } elseif (!is_numeric($höhenmeter)) {
+
+            echo "<p style='color:red;'>Höhenmeter muss eine Zahl sein!</p>";
+
+        } else {
+            $rennen_anlegen = new Rennen();
+            $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
+        }
+    }
     ?>
 
 
