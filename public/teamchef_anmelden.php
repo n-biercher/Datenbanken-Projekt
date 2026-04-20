@@ -21,7 +21,7 @@
                 <input id="teamchef_kennwort" name="teamchef_kennwort" type="password">
             </p>
 
-            <p><input type="submit" value="login"></p>
+            <p><input type="submit" name="login" value="login"></p>
             <p><a href="index.php">Zurück zur Startseite</a></p>
         </fieldset>
     </form>
