@@ -1,4 +1,8 @@
 <!-- Lena Strohmenger Beginn -->
+
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="de">
 
@@ -53,7 +57,10 @@
             $stmt = $this->connect()->prepare($sql);
             $stmt->execute([$veranstalter_loginname, $veranstalter_kennwort]);
 
-            echo "Registrierung erfolgreich!";
+            $_SESSION['veranstalter_loginname'] = $veranstalter_loginname;
+
+            header("Location: veranstalter_startseite.php");
+            exit();
         }
         public function veranstalterAnmelden($veranstalter_loginname, $veranstalter_kennwort)
         {
@@ -68,7 +75,9 @@
             }
 
             if ($result['Kennwort'] === $veranstalter_kennwort) {
-                echo "Willkommen, " . $result['VeranstalterLoginName'] . "!";
+                $_SESSION['veranstalter_loginname'] = $result['VeranstalterLoginName'];
+                header("Location: veranstalter_startseite.php");
+                exit();
             } else {
                 echo "Falsches Kennwort!";
             }
@@ -83,7 +92,6 @@
         $veranstalterRegistrieren->veranstalterRegistrieren($veranstalter_loginname, $veranstalter_kennwort);
 
     }
-
 
     if (isset($_POST['login'])) {
         $veranstalter_loginname = $_POST['veranstalter_loginname'];
