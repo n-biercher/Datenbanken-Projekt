@@ -105,9 +105,9 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `gruppe5`.`teilnehmen`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `gruppe5`.`teilnehmen` ;
+DROP TABLE IF EXISTS `gruppe5`.`Teilnahme` ;
 
-CREATE TABLE IF NOT EXISTS `gruppe5`.`teilnehmen` (
+CREATE TABLE IF NOT EXISTS `gruppe5`.`Teilnahme` (
   `MitarbeiterId` INT NOT NULL,
   `Teamname` VARCHAR(50) NOT NULL,
   `RennId` INT NOT NULL,

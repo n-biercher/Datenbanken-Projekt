@@ -8,62 +8,66 @@
 </head>
 
 <body>
-    <h1>Teamchef anmelden</h1>
-    <form action="" method="POST">
-        <fieldset>
-            <legend>Login-Daten unten eintragen</legend>
-            <p>
-                <label for="teamchef_loginname">Loginname</label><br>
-                <input id="teamchef_loginname" name="teamchef_loginname">
-            </p>
-            <p>
-                <label for="teamchef_kennwort">Kennwort</label><br>
-                <input id="teamchef_kennwort" name="teamchef_kennwort" type="password">
-            </p>
 
-            <p><input type="submit" name="login" value="login"></p>
-            <p><a href="index.php">Zurück zur Startseite</a></p>
-        </fieldset>
-    </form>
+<h1>Login</h1>
 
-    <?php
+<form action="" method="POST">
+    <fieldset>
+        <legend>Login</legend>
 
-    include_once 'dbh.php';
+        <p>
+            <label>Loginname</label><br>
+            <input name="loginname" required>
+        </p>
 
-    class Teamchef extends Dbh
+        <p>
+            <label>Kennwort</label><br>
+            <input name="kennwort" type="password" required>
+        </p>
+
+        <p>
+            <input type="submit" name="login" value="Einloggen">
+        </p>
+
+        <p>
+            <a href="index.php">Zurück</a>
+        </p>
+    </fieldset>
+</form>
+
+<?php
+
+include_once 'dbh.php';
+
+class TeamchefLogin extends Dbh
+{
+    public function login($loginname, $kennwort)
     {
-        public function teamchefAnmelden($teamchef_loginname, $teamchef_kennwort)
-        {
-            $sql = "SELECT * FROM Teamchef WHERE TeamchefLoginName = ?";
-            $stmt = $this->connect()->prepare($sql);
-            $stmt->execute([$teamchef_loginname]);
-            $result = $stmt->fetch();
+        $stmt = $this->connect()->prepare(
+            "SELECT * FROM Teamchef WHERE TeamchefLoginName = ?"
+        );
+        $stmt->execute([$loginname]);
+        $user = $stmt->fetch();
 
-            if (!$result) {
-                echo "Bitte registriere dich zuerst!";
-                return;
-            }
+        if (!$user) {
+            echo "User nicht gefunden";
+            return;
+        }
 
-            if ($result['Kennwort'] === $teamchef_kennwort) {
-                echo "Willkommen, " . $result['TeamchefLoginName'] . "!";
-            } else {
-                echo "Falsches Kennwort!";
-            }
+        if (password_verify($kennwort, $user['Kennwort'])) {
+            echo "Willkommen " . htmlspecialchars($user['TeamchefLoginName']);
+        } else {
+            echo "Falsches Passwort";
         }
     }
+}
 
-    if (isset($_POST['login'])) {
-        $teamchef_loginname = $_POST['teamchef_loginname'];
-        $teamchef_kennwort = $_POST['teamchef_kennwort'];
-
-        $teamchef_einloggen = new teamchef();
-        $teamchef_einloggen->teamchefAnmelden($teamchef_loginname, $teamchef_kennwort);
-    }
-    ?>
-
+if (isset($_POST['login'])) {
+    $login = new TeamchefLogin();
+    $login->login($_POST['loginname'], $_POST['kennwort']);
+}
+?>
 
 </body>
-
 </html>
-
 <!-- Nicolas Biercher Ende -->

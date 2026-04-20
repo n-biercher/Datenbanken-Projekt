@@ -1,3 +1,4 @@
+<!-- Nicolas Biercher Beginn -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -8,40 +9,120 @@
 <body>
 
 <h1>Team erstellen</h1>
- <form>
 
- <fieldset>
-        <legend>Bitte Team-Daten für die Teamregestrierung eingeben</legend>
-            <label for="teamname">Teamname</label><br>
-            <input id="teamname" name="teamname">
-       </p>
-        <p>
-            <label for="vorname">Vorname</label><br>
-            <input id="vorname" name="vorname">
-        </p>
-        <p>
-            <label for="nachname">Nachname</label><br>
-            <input id="nachname" name="nachname">
-        </p>
-        <p>
-            <label for="loginname">Loginname</label><br>
-            <input id="loginname" name="loginname">
-        </p>
-        <p>
-            <label for="kennwort">Kennwort</label><br>
-            <input id="kennwort" name="kennwort" type="password">
-        </p>
-        <p>
-            <label for="kennwort_bestaetigung">Kennwort bestätigen</label><br>
-            <input id="kennwort_bestaetigung" name="kennwort_bestaetigung" type="password">
-        </p>
-        <p><input type="submit" value="Speichern"></p>
-        <p><a href="index.php">Zurück zur Startseite</a></p>
-    </form>
+<form action="" method="POST">
+    <fieldset>
+        <legend>Bitte Team-Daten eingeben</legend>
 
- </fieldset>
-       
+        <p>
+            <label>Teamname</label><br>
+            <input name="teamname" required>
+        </p>
 
+        <p>
+            <label>Vorname</label><br>
+            <input name="vorname" required>
+        </p>
+
+        <p>
+            <label>Nachname</label><br>
+            <input name="nachname" required>
+        </p>
+
+        <p>
+            <label>Loginname</label><br>
+            <input name="loginname" required>
+        </p>
+
+        <p>
+            <label>Kennwort</label><br>
+            <input name="kennwort" type="password" required>
+        </p>
+
+        <p>
+            <label>Kennwort bestätigen</label><br>
+            <input name="kennwort_bestaetigung" type="password" required>
+        </p>
+
+        <p>
+            <input type="submit" name="registrieren" value="Registrieren">
+        </p>
+
+        <p>
+            <a href="index.php">Zurück</a>
+        </p>
+    </fieldset>
+</form>
+
+<?php
+
+include_once 'dbh.php';
+
+class TeamRegistrierung extends Dbh
+{
+    public function registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_bestaetigung)
+    {
+        if ($kennwort !== $kennwort_bestaetigung) {
+            echo "Kennwörter stimmen nicht überein";
+            return;
+        }
+
+        $pdo = $this->connect();
+
+        try {
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("SELECT * FROM Teamchef WHERE TeamchefLoginName = ?");
+            $stmt->execute([$loginname]);
+            if ($stmt->fetch()) {
+                echo "Loginname existiert bereits";
+                return;
+            }
+
+            $stmt = $pdo->prepare("SELECT * FROM Team WHERE Teamname = ?");
+            $stmt->execute([$teamname]);
+            if ($stmt->fetch()) {
+                echo "Teamname existiert bereits";
+                return;
+            }
+
+            $hash = password_hash($kennwort, PASSWORD_DEFAULT);
+
+            $stmt = $pdo->prepare("
+                INSERT INTO Teamchef (TeamchefLoginName, Kennwort, Vorname, Nachname)
+                VALUES (?, ?, ?, ?)
+            ");
+            $stmt->execute([$loginname, $hash, $vorname, $nachname]);
+
+            $stmt = $pdo->prepare("
+                INSERT INTO Team (Teamname, TeamchefLoginName)
+                VALUES (?, ?)
+            ");
+            $stmt->execute([$teamname, $loginname]);
+
+            $pdo->commit();
+
+            echo "Registrierung erfolgreich!";
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            echo "Fehler: " . $e->getMessage();
+        }
+    }
+}
+
+if (isset($_POST['registrieren'])) {
+    $reg = new TeamRegistrierung();
+    $reg->registrieren(
+        $_POST['teamname'],
+        $_POST['vorname'],
+        $_POST['nachname'],
+        $_POST['loginname'],
+        $_POST['kennwort'],
+        $_POST['kennwort_bestaetigung']
+    );
+}
+?>
 
 </body>
 </html>
+<!-- Nicolas Biercher Ende -->
