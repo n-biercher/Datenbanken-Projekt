@@ -1,3 +1,4 @@
+<!-- Lena Strohmenger Beginn -->
 <?php 
 
 class Dbh {
@@ -5,7 +6,6 @@ class Dbh {
     private $user = "gruppe5";
     private $password = "uFImZLfaHtD8";
     private $dbName = "gruppe5";
-
     protected function connect() {
         try {   
             $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbName;
@@ -17,5 +17,11 @@ class Dbh {
         }
     }
 }
+
+?>
+
+<!-- Lena Strohmenger Ende -->
+
+
 
 
