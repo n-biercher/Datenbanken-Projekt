@@ -1,23 +1,10 @@
+<!-- Nicolas Biercher Beginn -->
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
 include_once 'dbh.php';
-?>
-<!-- Nicolas Biercher Beginn -->
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Team verwalten</title>
-</head>
-<body>
-
-<h1>Team verwalten</h1>
-
-<?php
 
 class TeamVerwaltung extends Dbh
 {
@@ -41,14 +28,14 @@ class TeamVerwaltung extends Dbh
 
         $query = $db_verbindung->prepare("
             SELECT
-                `Mitarbeiter-ID`,
-                Vorname,
-                Nachname,
-                `Straße`,
-                Hausnummer,
-                Telefonnummer,
-                PLZ,
-                Ort
+                `Mitarbeiter-ID` AS mitarbeiter_id,
+                Vorname AS vorname,
+                Nachname AS nachname,
+                `Straße` AS strasse,
+                Hausnummer AS hausnummer,
+                Telefonnummer AS telefonnummer,
+                PLZ AS plz,
+                Ort AS ort
             FROM Fahrer
             WHERE Teamname = ?
             ORDER BY `Mitarbeiter-ID` ASC
@@ -64,14 +51,14 @@ class TeamVerwaltung extends Dbh
 
         $query = $db_verbindung->prepare("
             SELECT
-                `Mitarbeiter-ID`,
-                Vorname,
-                Nachname,
-                `Straße`,
-                Hausnummer,
-                Telefonnummer,
-                PLZ,
-                Ort
+                `Mitarbeiter-ID` AS mitarbeiter_id,
+                Vorname AS vorname,
+                Nachname AS nachname,
+                `Straße` AS strasse,
+                Hausnummer AS hausnummer,
+                Telefonnummer AS telefonnummer,
+                PLZ AS plz,
+                Ort AS ort
             FROM Fahrer
             WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
         ");
@@ -127,7 +114,7 @@ class TeamVerwaltung extends Dbh
         $db_verbindung = $this->connect();
 
         $vorhanden_query = $db_verbindung->prepare("
-            SELECT *
+            SELECT 1
             FROM Fahrer
             WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
         ");
@@ -139,7 +126,7 @@ class TeamVerwaltung extends Dbh
 
         $insert_query = $db_verbindung->prepare("
             INSERT INTO Fahrer
-            (`Mitarbeiter-ID`, Vorname, Nachname, Straße, Hausnummer, Telefonnummer, PLZ, Ort, Teamname)
+            (`Mitarbeiter-ID`, Vorname, Nachname, `Straße`, Hausnummer, Telefonnummer, PLZ, Ort, Teamname)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $insert_query->execute([
@@ -171,7 +158,7 @@ class TeamVerwaltung extends Dbh
             SET
                 Vorname = ?,
                 Nachname = ?,
-                Straße = ?,
+                `Straße` = ?,
                 Hausnummer = ?,
                 Telefonnummer = ?,
                 PLZ = ?,
@@ -270,6 +257,7 @@ if (isset($_POST['speichern'])) {
             $ort,
             $teamname
         );
+        $bearbeitungsmodus = true;
     } else {
         $meldung = $verwaltung->neuerFahrer(
             $mitarbeiter_id,
@@ -283,6 +271,17 @@ if (isset($_POST['speichern'])) {
             $teamname
         );
     }
+
+    if ($meldung !== "Fahrer wurde erfolgreich angelegt" && $meldung !== "Fahrerdaten wurden erfolgreich geändert") {
+        $formular_daten['mitarbeiter_id'] = $mitarbeiter_id;
+        $formular_daten['vorname'] = $vorname;
+        $formular_daten['nachname'] = $nachname;
+        $formular_daten['strasse'] = $strasse;
+        $formular_daten['hausnummer'] = $hausnummer;
+        $formular_daten['telefonnummer'] = $telefonnummer;
+        $formular_daten['plz'] = $plz;
+        $formular_daten['ort'] = $ort;
+    }
 }
 
 if (isset($_POST['loeschen'])) {
@@ -295,19 +294,29 @@ if (isset($_GET['bearbeiten'])) {
 
     if ($fahrer) {
         $bearbeitungsmodus = true;
-        $formular_daten['mitarbeiter_id'] = $fahrer['Mitarbeiter-ID'];
-        $formular_daten['vorname'] = $fahrer['Vorname'];
-        $formular_daten['nachname'] = $fahrer['Nachname'];
-        $formular_daten['strasse'] = $fahrer['Straße'];
-        $formular_daten['hausnummer'] = $fahrer['Hausnummer'];
-        $formular_daten['telefonnummer'] = $fahrer['Telefonnummer'];
-        $formular_daten['plz'] = $fahrer['PLZ'];
-        $formular_daten['ort'] = $fahrer['Ort'];
+        $formular_daten['mitarbeiter_id'] = $fahrer['mitarbeiter_id'];
+        $formular_daten['vorname'] = $fahrer['vorname'];
+        $formular_daten['nachname'] = $fahrer['nachname'];
+        $formular_daten['strasse'] = $fahrer['strasse'];
+        $formular_daten['hausnummer'] = $fahrer['hausnummer'];
+        $formular_daten['telefonnummer'] = $fahrer['telefonnummer'];
+        $formular_daten['plz'] = $fahrer['plz'];
+        $formular_daten['ort'] = $fahrer['ort'];
     }
 }
 
 $alle_fahrer = $verwaltung->holeAlleFahrer($teamname);
 ?>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Team verwalten</title>
+</head>
+<body>
+
+<h1>Team verwalten</h1>
 
 <p>Angemeldet als Teamchef: <?php echo htmlspecialchars($teamchef_loginname); ?></p>
 <p>Team: <?php echo htmlspecialchars($teamname); ?></p>
@@ -398,19 +407,19 @@ $alle_fahrer = $verwaltung->holeAlleFahrer($teamname);
     <?php if (count($alle_fahrer) > 0): ?>
         <?php foreach ($alle_fahrer as $fahrer): ?>
             <tr>
-                <td><?php echo htmlspecialchars($fahrer['Mitarbeiter-ID']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['Vorname']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['Nachname']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['Straße']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['Hausnummer']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['Telefonnummer']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['PLZ']); ?></td>
-                <td><?php echo htmlspecialchars($fahrer['Ort']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['mitarbeiter_id']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['vorname']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['nachname']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['strasse']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['hausnummer']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['telefonnummer']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['plz']); ?></td>
+                <td><?php echo htmlspecialchars($fahrer['ort']); ?></td>
                 <td>
-                    <a href="team_verwalten.php?bearbeiten=<?php echo urlencode($fahrer['Mitarbeiter-ID']); ?>">Bearbeiten</a>
+                    <a href="team_verwalten.php?bearbeiten=<?php echo urlencode($fahrer['mitarbeiter_id']); ?>">Bearbeiten</a>
 
                     <form action="" method="POST" style="display:inline;">
-                        <input type="hidden" name="mitarbeiter_id" value="<?php echo htmlspecialchars($fahrer['Mitarbeiter-ID']); ?>">
+                        <input type="hidden" name="mitarbeiter_id" value="<?php echo htmlspecialchars($fahrer['mitarbeiter_id']); ?>">
                         <input type="submit" name="loeschen" value="Löschen" onclick="return confirm('Soll dieser Fahrer wirklich gelöscht werden?');">
                     </form>
                 </td>
