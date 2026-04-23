@@ -41,6 +41,7 @@ $alle_rennen = $rennen_objekt->alleRennenHolen();
     <p>Du bist jetzt eingeloggt.</p>
 
     <p><a href="logout.php">Logout</a></p>
+    <p><a href="team_verwalten.php">Team verwalten</a></p> // Nicolas Biercher
 
     <h2>Fahrer zu einem Rennen anmelden</h2>
 
