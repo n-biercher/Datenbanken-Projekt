@@ -1,3 +1,10 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+session_start();
+include_once 'dbh.php';
+?>
 <!-- Nicolas Biercher Beginn -->
 <!DOCTYPE html>
 <html lang="de">
@@ -11,9 +18,6 @@
 <h1>Team verwalten</h1>
 
 <?php
-
-session_start();
-include_once 'dbh.php';
 
 class TeamVerwaltung extends Dbh
 {
@@ -186,10 +190,6 @@ class TeamVerwaltung extends Dbh
             $teamname
         ]);
 
-        if ($update_query->rowCount() === 0) {
-            return "Fahrer konnte nicht geändert werden";
-        }
-
         return "Fahrerdaten wurden erfolgreich geändert";
     }
 
@@ -222,6 +222,7 @@ if (!isset($_SESSION['teamchef_loginname'])) {
 }
 
 $teamchef_loginname = $_SESSION['teamchef_loginname'];
+
 $verwaltung = new TeamVerwaltung();
 $team = $verwaltung->holeTeamnameVomTeamchef($teamchef_loginname);
 
@@ -303,16 +304,6 @@ if (isset($_GET['bearbeiten'])) {
         $formular_daten['plz'] = $fahrer['PLZ'];
         $formular_daten['ort'] = $fahrer['Ort'];
     }
-} elseif (isset($_POST['speichern']) && $meldung !== "Fahrer wurde erfolgreich angelegt" && $meldung !== "Fahrerdaten wurden erfolgreich geändert") {
-    $bearbeitungsmodus = ($_POST['modus'] === 'bearbeiten');
-    $formular_daten['mitarbeiter_id'] = trim($_POST['mitarbeiter_id']);
-    $formular_daten['vorname'] = trim($_POST['vorname']);
-    $formular_daten['nachname'] = trim($_POST['nachname']);
-    $formular_daten['strasse'] = trim($_POST['strasse']);
-    $formular_daten['hausnummer'] = trim($_POST['hausnummer']);
-    $formular_daten['telefonnummer'] = trim($_POST['telefonnummer']);
-    $formular_daten['plz'] = trim($_POST['plz']);
-    $formular_daten['ort'] = trim($_POST['ort']);
 }
 
 $alle_fahrer = $verwaltung->holeAlleFahrer($teamname);
@@ -327,15 +318,7 @@ $alle_fahrer = $verwaltung->holeAlleFahrer($teamname);
 
 <form action="" method="POST">
     <fieldset>
-        <legend>
-            <?php
-            if ($bearbeitungsmodus) {
-                echo "Fahrer bearbeiten";
-            } else {
-                echo "Neuen Fahrer anlegen";
-            }
-            ?>
-        </legend>
+        <legend><?php echo $bearbeitungsmodus ? "Fahrer bearbeiten" : "Neuen Fahrer anlegen"; ?></legend>
 
         <input type="hidden" name="modus" value="<?php echo $bearbeitungsmodus ? 'bearbeiten' : 'neu'; ?>">
 
@@ -345,7 +328,6 @@ $alle_fahrer = $verwaltung->holeAlleFahrer($teamname);
                 name="mitarbeiter_id"
                 value="<?php echo htmlspecialchars($formular_daten['mitarbeiter_id']); ?>"
                 <?php echo $bearbeitungsmodus ? 'readonly' : 'required'; ?>
-                <?php echo !$bearbeitungsmodus ? 'required' : ''; ?>
             >
         </p>
 
