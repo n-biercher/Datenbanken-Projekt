@@ -22,6 +22,7 @@ session_start();
     </p>
 
     <ul>
+        <li><a href="team_verwalten.php">Team verwalten</a></li>
         <li><a href="logout.php">Logout</a></li>
     </ul>
 

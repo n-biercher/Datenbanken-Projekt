@@ -60,10 +60,46 @@ include_once 'dbh.php';
 
 class TeamRegistrierung extends Dbh
 {
+    private function istKennwortSicher($kennwort)
+    {
+        // Mindestlänge 8 Zeichen
+        if (strlen($kennwort) < 8) {
+            return "Das Kennwort muss mindestens 8 Zeichen lang sein";
+        }
+
+        // Mindestens ein Großbuchstabe
+        if (!preg_match('/[A-Z]/', $kennwort)) {
+            return "Das Kennwort muss mindestens einen Großbuchstaben enthalten";
+        }
+
+        // Mindestens ein Kleinbuchstabe
+        if (!preg_match('/[a-z]/', $kennwort)) {
+            return "Das Kennwort muss mindestens einen Kleinbuchstaben enthalten";
+        }
+
+        // Mindestens eine Zahl
+        if (!preg_match('/[0-9]/', $kennwort)) {
+            return "Das Kennwort muss mindestens eine Zahl enthalten";
+        }
+
+        // Mindestens ein Sonderzeichen
+        if (!preg_match('/[\W_]/', $kennwort)) {
+            return "Das Kennwort muss mindestens ein Sonderzeichen enthalten";
+        }
+
+        return true;
+    }
+
     public function registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_bestaetigung)
     {
         if ($kennwort !== $kennwort_bestaetigung) {
             echo "Kennwörter stimmen nicht überein";
+            return;
+        }
+
+        $sicherheitsprüfung_passwort = $this->istKennwortSicher($kennwort);
+        if ($sicherheitsprüfung_passwort !== true) {
+            echo $sicherheitsprüfung_passwort;
             return;
         }
 
