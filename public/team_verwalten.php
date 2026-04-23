@@ -74,6 +74,7 @@ if (!$team) {
 
 $teamname = $team['Teamname'];
 $meldung = "";
+$modal_oeffnen = false;
 
 if (isset($_POST['fahrer_anlegen'])) {
     $vorname = trim($_POST['vorname']);
@@ -97,8 +98,13 @@ if (isset($_POST['fahrer_anlegen'])) {
         );
 
         $meldung = $ergebnis['meldung'];
+
+        if (!isset($ergebnis['erfolg']) || $ergebnis['erfolg'] != 1) {
+            $modal_oeffnen = true;
+        }
     } catch (PDOException $e) {
         $meldung = "Fehler beim Anlegen des Fahrers.";
+        $modal_oeffnen = true;
     }
 }
 
@@ -128,48 +134,60 @@ function wert($array, $key)
     <p><?php echo htmlspecialchars($meldung); ?></p>
 <?php endif; ?>
 
-<h2>Neuen Fahrer anlegen</h2>
+<p>
+    <button type="button" onclick="document.getElementById('fahrerModal').showModal()">
+        Neuen Fahrer anlegen
+    </button>
+</p>
 
-<form action="" method="POST">
-    <p>
-        <label>Vorname</label><br>
-        <input name="vorname" required>
-    </p>
+<dialog id="fahrerModal">
+    <h2>Neuen Fahrer anlegen</h2>
 
-    <p>
-        <label>Nachname</label><br>
-        <input name="nachname" required>
-    </p>
+    <form action="" method="POST">
+        <p>
+            <label>Vorname</label><br>
+            <input name="vorname" required>
+        </p>
 
-    <p>
-        <label>Straße</label><br>
-        <input name="strasse" required>
-    </p>
+        <p>
+            <label>Nachname</label><br>
+            <input name="nachname" required>
+        </p>
 
-    <p>
-        <label>Hausnummer</label><br>
-        <input name="hausnummer" required>
-    </p>
+        <p>
+            <label>Straße</label><br>
+            <input name="strasse" required>
+        </p>
 
-    <p>
-        <label>Telefonnummer</label><br>
-        <input name="telefonnummer" required>
-    </p>
+        <p>
+            <label>Hausnummer</label><br>
+            <input name="hausnummer" required>
+        </p>
 
-    <p>
-        <label>PLZ</label><br>
-        <input name="plz" maxlength="5" required>
-    </p>
+        <p>
+            <label>Telefonnummer</label><br>
+            <input name="telefonnummer" required>
+        </p>
 
-    <p>
-        <label>Ort</label><br>
-        <input name="ort" required>
-    </p>
+        <p>
+            <label>PLZ</label><br>
+            <input name="plz" maxlength="5" required>
+        </p>
 
-    <p>
-        <input type="submit" name="fahrer_anlegen" value="Fahrer anlegen">
-    </p>
-</form>
+        <p>
+            <label>Ort</label><br>
+            <input name="ort" required>
+        </p>
+
+        <p>
+            <input type="submit" name="fahrer_anlegen" value="Fahrer anlegen">
+        </p>
+    </form>
+
+    <form method="dialog">
+        <p><button>Schließen</button></p>
+    </form>
+</dialog>
 
 <h2>Alle Fahrer</h2>
 
@@ -208,6 +226,12 @@ function wert($array, $key)
 </table>
 
 <p><a href="index.php">Zurück</a></p>
+
+<?php if ($modal_oeffnen): ?>
+<script>
+document.getElementById('fahrerModal').showModal();
+</script>
+<?php endif; ?>
 
 </body>
 </html>
