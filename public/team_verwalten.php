@@ -36,11 +36,30 @@ class TeamVerwaltung extends Dbh
 
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
-}
 
-if (!isset($_SESSION['teamchef_loginname'])) {
-    echo "Bitte zuerst als Teamchef anmelden.";
-    exit;
+    public function fahrerAnlegen($vorname, $nachname, $strasse, $hausnummer, $telefonnummer, $plz, $ort, $teamname)
+    {
+        $db_verbindung = $this->connect();
+
+        $query = $db_verbindung->prepare("
+            CALL FahrerAnlegen(?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $query->execute([
+            $vorname,
+            $nachname,
+            $strasse,
+            $hausnummer,
+            $telefonnummer,
+            $plz,
+            $ort,
+            $teamname
+        ]);
+
+        $ergebnis = $query->fetch(PDO::FETCH_ASSOC);
+        $query->closeCursor();
+
+        return $ergebnis;
+    }
 }
 
 $teamchef_loginname = $_SESSION['teamchef_loginname'];
@@ -54,6 +73,35 @@ if (!$team) {
 }
 
 $teamname = $team['Teamname'];
+$meldung = "";
+
+if (isset($_POST['fahrer_anlegen'])) {
+    $vorname = trim($_POST['vorname']);
+    $nachname = trim($_POST['nachname']);
+    $strasse = trim($_POST['strasse']);
+    $hausnummer = trim($_POST['hausnummer']);
+    $telefonnummer = trim($_POST['telefonnummer']);
+    $plz = trim($_POST['plz']);
+    $ort = trim($_POST['ort']);
+
+    try {
+        $ergebnis = $verwaltung->fahrerAnlegen(
+            $vorname,
+            $nachname,
+            $strasse,
+            $hausnummer,
+            $telefonnummer,
+            $plz,
+            $ort,
+            $teamname
+        );
+
+        $meldung = $ergebnis['meldung'];
+    } catch (PDOException $e) {
+        $meldung = "Fehler beim Anlegen des Fahrers.";
+    }
+}
+
 $alle_fahrer = $verwaltung->holeAlleFahrer($teamname);
 
 function wert($array, $key)
@@ -75,6 +123,53 @@ function wert($array, $key)
 
 <p>Angemeldet als Teamchef: <?php echo htmlspecialchars($teamchef_loginname); ?></p>
 <p>Team: <?php echo htmlspecialchars($teamname); ?></p>
+
+<?php if ($meldung !== ""): ?>
+    <p><?php echo htmlspecialchars($meldung); ?></p>
+<?php endif; ?>
+
+<h2>Neuen Fahrer anlegen</h2>
+
+<form action="" method="POST">
+    <p>
+        <label>Vorname</label><br>
+        <input name="vorname" required>
+    </p>
+
+    <p>
+        <label>Nachname</label><br>
+        <input name="nachname" required>
+    </p>
+
+    <p>
+        <label>Straße</label><br>
+        <input name="strasse" required>
+    </p>
+
+    <p>
+        <label>Hausnummer</label><br>
+        <input name="hausnummer" required>
+    </p>
+
+    <p>
+        <label>Telefonnummer</label><br>
+        <input name="telefonnummer" required>
+    </p>
+
+    <p>
+        <label>PLZ</label><br>
+        <input name="plz" maxlength="5" required>
+    </p>
+
+    <p>
+        <label>Ort</label><br>
+        <input name="ort" required>
+    </p>
+
+    <p>
+        <input type="submit" name="fahrer_anlegen" value="Fahrer anlegen">
+    </p>
+</form>
 
 <h2>Alle Fahrer</h2>
 
