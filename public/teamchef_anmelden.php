@@ -64,7 +64,7 @@ class TeamchefLogin extends Dbh
             $_SESSION['vorname'] = $user['Vorname'];
             $_SESSION['nachname'] = $user['Nachname'];
 
-            header("Location: teamchef_startseite.php"); //habe ich umgeleitet, für die Fahreranmeldung 
+            header("Location: index.php"); //habe ich umgeleitet, für die Fahreranmeldung 
             exit();
 
         } else {
