@@ -1,9 +1,11 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 session_start();
-include_once 'dbh.php';
+if (!isset($_SESSION['teamchef_loginname'])) {
+    header("Location: teamchef_anmelden.php");
+    exit();
+}
+
+include_once('dbh.php');
 
 class TeamVerwaltung extends Dbh
 {
