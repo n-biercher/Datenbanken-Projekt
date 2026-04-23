@@ -23,6 +23,7 @@ session_start();
 
     <ul>
         <li><a href="team_verwalten.php">Team verwalten</a></li>
+        <li><a href="teamchef_startseite.php">Team Startseite</a></li>
         <li><a href="logout.php">Logout</a></li>
     </ul>
 
