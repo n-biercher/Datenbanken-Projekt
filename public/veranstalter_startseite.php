@@ -109,7 +109,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
 
             echo "<p style='color:red;'>Kilometer muss eine Zahl sein!</p>";
 
-        } elseif (!is_numeric($höhenmeter)) {
+        } elseif (!is_numeric($hoehenmeter)) {
 
             echo "<p style='color:red;'>Höhenmeter muss eine Zahl sein!</p>";
 

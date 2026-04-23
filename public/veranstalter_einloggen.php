@@ -50,7 +50,7 @@ session_start();
             if ($stmt->fetch()) {
                 echo "Loginname bereits vergeben!";
                 return;
-            }
+            } else {
 
             $sql = "INSERT INTO Veranstalter (VeranstalterLoginName, Kennwort) VALUES (?, ?)";
 
@@ -61,6 +61,7 @@ session_start();
 
             header("Location: veranstalter_startseite.php");
             exit();
+        }
         }
         public function veranstalterAnmelden($veranstalter_loginname, $veranstalter_kennwort)
         {
@@ -88,9 +89,13 @@ session_start();
         $veranstalter_loginname = $_POST['veranstalter_loginname'];
         $veranstalter_kennwort = $_POST['veranstalter_kennwort'];
 
+        if (empty($veranstalter_loginname) || empty($veranstalter_kennwort)) {
+        echo "Bitte Loginname und Kennwort eingeben!";
+    } else {
+
         $veranstalterRegistrieren = new Veranstalter();
         $veranstalterRegistrieren->veranstalterRegistrieren($veranstalter_loginname, $veranstalter_kennwort);
-
+    }
     }
 
     if (isset($_POST['login'])) {
