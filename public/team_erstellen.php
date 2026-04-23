@@ -67,44 +67,44 @@ class TeamRegistrierung extends Dbh
             return;
         }
 
-        $pdo = $this->connect();
+        $db_verbindung = $this->connect();
 
         try {
-            $pdo->beginTransaction();
+            $db_verbindung->beginTransaction();
 
-            $stmt = $pdo->prepare("SELECT * FROM Teamchef WHERE TeamchefLoginName = ?");
-            $stmt->execute([$loginname]);
-            if ($stmt->fetch()) {
+            $loginname_query = $db_verbindung->prepare("SELECT * FROM Teamchef WHERE TeamchefLoginName = ?");
+            $loginname_query->execute([$loginname]);
+            if ($loginname_query->fetch()) {
                 echo "Loginname existiert bereits";
                 return;
             }
 
-            $stmt = $pdo->prepare("SELECT * FROM Team WHERE Teamname = ?");
-            $stmt->execute([$teamname]);
-            if ($stmt->fetch()) {
+            $teamname_query = $db_verbindung->prepare("SELECT * FROM Team WHERE Teamname = ?");
+            $teamname_query->execute([$teamname]);
+            if ($teamname_query->fetch()) {
                 echo "Teamname existiert bereits";
                 return;
             }
 
             $hash = password_hash($kennwort, PASSWORD_DEFAULT);
 
-            $stmt = $pdo->prepare("
+            $teamchef_erstellen_query = $db_verbindung->prepare("
                 INSERT INTO Teamchef (TeamchefLoginName, Kennwort, Vorname, Nachname)
                 VALUES (?, ?, ?, ?)
             ");
-            $stmt->execute([$loginname, $hash, $vorname, $nachname]);
+            $teamchef_erstellen_query->execute([$loginname, $hash, $vorname, $nachname]);
 
-            $stmt = $pdo->prepare("
+            $team_erstellen_query = $db_verbindung->prepare("
                 INSERT INTO Team (Teamname, TeamchefLoginName)
                 VALUES (?, ?)
             ");
-            $stmt->execute([$teamname, $loginname]);
+            $team_erstellen_query->execute([$teamname, $loginname]);
 
-            $pdo->commit();
+            $db_verbindung->commit();
 
             echo "Registrierung erfolgreich!";
         } catch (PDOException $e) {
-            $pdo->rollBack();
+            $db_verbindung->rollBack();
             echo "Fehler: " . $e->getMessage();
         }
     }

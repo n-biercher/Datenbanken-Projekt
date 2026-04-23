@@ -47,11 +47,11 @@ class TeamchefLogin extends Dbh
 {
     public function login($loginname, $kennwort)
     {
-        $stmt = $this->connect()->prepare(
+        $anmelde_abfrage = $this->connect()->prepare(
             "SELECT * FROM Teamchef WHERE TeamchefLoginName = ?"
         );
-        $stmt->execute([$loginname]);
-        $user = $stmt->fetch();
+        $anmelde_abfrage->execute([$loginname]);
+        $user = $anmelde_abfrage->fetch();
 
         if (!$user) {
             echo "User nicht gefunden";
