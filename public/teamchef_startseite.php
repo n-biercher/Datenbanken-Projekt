@@ -55,6 +55,7 @@ $renn_id = "";
 $anzahl_fahrer = 0;
 $formular_anzeigen = false;
 $fehlermeldung = "";
+$erfolgsmeldung = "";
 
 if (isset($_POST['rennen_auswaehlen'])) {
     if (isset($_POST['rennid']) && isset($_POST['anzahl_fahrer'])) {
@@ -77,6 +78,7 @@ if (isset($_POST['fahrer_anmelden'])) {
         $rennen_objekt->fahrerAnmelden($mitarbeiter_id, $renn_id);
 
     }
+    $erfolgsmeldung = "Fahrer wurden erfolgreich angemeldet!";
 
 }
 
