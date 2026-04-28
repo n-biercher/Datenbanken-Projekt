@@ -46,7 +46,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             </p>
             <p>
                 <label for="plz">PLZ</label><br>
-                <input id="plz" name="plz" placeholder="Postleitzahl">
+                <input id="plz" name="plz" maxlength="5" placeholder="Postleitzahl">
             </p>
             <p>
                 <label for="ort">Ort</label><br>

@@ -117,7 +117,7 @@ class Veranstalter extends Dbh
             return;
         }
 
-        // Passwort prüfen (HASH!)
+        // Passwort prüfen 
         if (password_verify($passwort, $user['Kennwort'])) {
             $_SESSION['veranstalter_loginname'] = $user['VeranstalterLoginName'];
             header("Location: veranstalter_startseite.php");
