@@ -73,6 +73,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             <p><input type="submit" name="anlegen" value="Anlegen">
             </p>
             <p><a href="index.php">Zurück zur Startseite</a></p>
+            <p><a href="rennen_ergebniserfassung.php">Rennen Ergebniserfassung</a></p>
         </fieldset>
     </form>
 

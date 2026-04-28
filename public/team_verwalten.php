@@ -1,3 +1,4 @@
+<!-- Lena Strohmenger Beginn -->
 <?php
 session_start();
 if (!isset($_SESSION['teamchef_loginname'])) {
@@ -235,3 +236,4 @@ document.getElementById('fahrerModal').showModal();
 
 </body>
 </html>
+<!-- Lena Strohmenger Ende -->
