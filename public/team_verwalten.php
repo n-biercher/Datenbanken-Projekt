@@ -121,14 +121,9 @@ function wert($array, $key)
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Team verwalten</title>
+    <title>Team <?php echo htmlspecialchars($teamname); ?> verwalten</title>
 </head>
 <body>
-
-<h1>Team verwalten</h1>
-
-<p>Angemeldet als Teamchef: <?php echo htmlspecialchars($teamchef_loginname); ?></p>
-<p>Team: <?php echo htmlspecialchars($teamname); ?></p>
 
 <?php if ($meldung !== ""): ?>
     <p><?php echo htmlspecialchars($meldung); ?></p>
