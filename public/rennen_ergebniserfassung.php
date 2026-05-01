@@ -53,6 +53,13 @@ include_once('dbh.php');
             return $stmt->fetchAll();
 
         }
+
+        public function ergebnisseSpeichern($renn_id, $mitarbeiter_id, $teamname, $platzierung, $zeit)
+        { 
+            $sql = "UPDATE Teilnahme SET Platzierung = ?, Zeit = ? WHERE RennId = ? AND MitarbeiterId = ? AND Teamname = ?";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id, $teamname]);
+        }
     }
 
     $erfassung_objekt = new Ergebniserfassung();
@@ -74,6 +81,44 @@ include_once('dbh.php');
         $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
     }
 
+    if (isset($_POST['ergebnisse_speichern'])) {
+        $renn_id = $_POST['renn_id'];
+        $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
+
+        $max_plazierung = count($fahrer_liste);
+        $fehler = false;
+
+        foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+            $teamname = $_POST['teamname_' . $mitarbeiter_id];
+            $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
+            $zeit = $_POST['zeit_' . $mitarbeiter_id];
+
+            if (empty($platzierung) || empty($zeit)) {
+                echo "Bitte fülle alle Platzierungen und Zeiten aus.";
+                $fehler = true;
+                break;
+            }
+
+            if ($platzierung < 1 || $platzierung > $max_plazierung) {
+                echo "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
+                $fehler = true;
+                break;
+            }
+        }
+
+        if (!$fehler) {
+            foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+                $teamname = $_POST['teamname_' . $mitarbeiter_id];
+                $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
+                $zeit = $_POST['zeit_' . $mitarbeiter_id];
+
+                $erfassung_objekt->ergebnisseSpeichern($renn_id, $mitarbeiter_id, $teamname, $platzierung, $zeit);
+            }
+            echo "Ergebnisse wurden erfolgreich gespeichert!";
+        }
+
+   
+    }
 
 
 
