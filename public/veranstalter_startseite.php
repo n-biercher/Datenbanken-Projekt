@@ -21,7 +21,6 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             width: 250px;
         }
     </style>
-</head>
 
 <body>
 
@@ -70,7 +69,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             </p>
             <p>
                 <label>Veranstalter</label><br>
-                <input value="<?php echo $_SESSION['veranstalter_loginname']; ?>" readonly>
+                <input value="<?php echo htmlspecialchars($_SESSION['veranstalter_loginname']); ?>" readonly>
             </p>
 
             <p><input type="submit" name="anlegen" value="Anlegen">
