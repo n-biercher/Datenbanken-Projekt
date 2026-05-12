@@ -132,13 +132,15 @@ class Veranstalter extends Dbh
 if (isset($_POST['registrieren'])) {
     $loginname = $_POST['veranstalter_loginname'];
     $passwort = $_POST['veranstalter_kennwort'];
-    $passwort2 = $_POST['veranstalter_kennwort_bestaetigung'];
+    $passwort_besteatigen = $_POST['veranstalter_kennwort_bestaetigung'];
 
-    if (empty($loginname) || empty($passwort) || empty($passwort2)) {
+    if (empty($loginname) || empty($passwort) || empty($passwort_besteatigen)) {
         echo "Bitte alle Felder ausfüllen!";
+    } elseif (strlen($loginname) > 50) {
+        echo "Loginname darf maximal 50 Zeichen lang sein!";
     } else {
-        $obj = new Veranstalter();
-        $obj->veranstalterRegistrieren($loginname, $passwort, $passwort2);
+        $veranstalter_objekt = new Veranstalter();
+        $veranstalter_objekt->veranstalterRegistrieren($loginname, $passwort, $passwort_besteatigen);
     }
 }
 
@@ -150,8 +152,8 @@ if (isset($_POST['login'])) {
     if (empty($loginname) || empty($passwort)) {
         echo "Bitte Loginname und Kennwort eingeben!";
     } else {
-        $obj = new Veranstalter();
-        $obj->veranstalterAnmelden($loginname, $passwort);
+        $veranstalter_objekt = new Veranstalter();
+        $veranstalter_objekt->veranstalterAnmelden($loginname, $passwort);
     }
 }
 ?>

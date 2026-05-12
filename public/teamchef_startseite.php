@@ -127,8 +127,17 @@ if (isset($_POST['rennen_auswaehlen'])) {
 if (isset($_POST['fahrer_anmelden'])) {
     $renn_id = $_POST['renn_id'];
     $doppelt = false;
+    $ausgewaehlte_fahrer = [];
     for ($i = 1; $i <= $_POST['anzahl_fahrer']; $i++) {
         $mitarbeiter_id = $_POST['fahrer_' . $i];
+
+        if (in_array($mitarbeiter_id, $ausgewaehlte_fahrer)) {
+            $fehlermeldung = "Ein Fahrer darf nicht mehrfach ausgewählt werden!";
+            $doppelt = true;
+            break;
+        }
+
+        $ausgewaehlte_fahrer[] = $mitarbeiter_id;
 
         $angemeldet = $rennen_objekt->fahrerAnmelden($mitarbeiter_id, $renn_id);
 
@@ -170,16 +179,16 @@ if (isset($_POST['kopieren'])) {
 
 <body>
 
-    <h1>Willkommen <?php echo htmlspecialchars($_SESSION['teamchef_loginname']); ?>!</h1>
+    <h1>Willkommen <?php echo htmlentities($_SESSION['teamchef_loginname']); ?>!</h1>
 
     <p><a href="logout.php">Logout</a></p>
     <p><a href="team_verwalten.php">Team verwalten</a></p>
 
     <?php if (!empty($fehlermeldung)): ?>
-        <p style="color:red"><?php echo htmlspecialchars($fehlermeldung); ?></p>
+        <p style="color:red"><?php echo $fehlermeldung; ?></p>
     <?php endif; ?>
     <?php if (!empty($erfolgsmeldung)): ?>
-        <p style="color:green"><?php echo htmlspecialchars($erfolgsmeldung); ?></p>
+        <p style="color:green"><?php echo $erfolgsmeldung; ?></p>
     <?php endif; ?>
 
     <!-- Fahrer manuell anmelden  -->
@@ -191,17 +200,17 @@ if (isset($_POST['kopieren'])) {
 
             <?php foreach ($alle_rennen as $rennen):
                 $isChecked = ($renn_id == $rennen['RennId']) ? 'checked' : '';
-                $rennId = htmlspecialchars($rennen['RennId']);
-                $datum = htmlspecialchars($rennen['Datum']);
-                $ort = htmlspecialchars($rennen['Ort']);
-                $kilometer = htmlspecialchars($rennen['Kilometer']);
+                $rennId = $rennen['RennId'];
+                $datum = $rennen['Datum'];
+                $ort = htmlentities($rennen['Ort']);
+                $kilometer = $rennen['Kilometer'];
                 ?>
                 <p>
                     <label>
                         <input type="radio" name="rennid" value="<?php echo $rennId; ?>" <?php echo $isChecked; ?>>
                         Rennen <?php echo $rennId; ?> –
                         <?php echo $datum; ?> –
-                        <?php echo $ort; ?> –
+                        <?php echo htmlentities($ort); ?> –
                         <?php echo $kilometer; ?> km
                     </label>
                 </p>
@@ -209,7 +218,7 @@ if (isset($_POST['kopieren'])) {
 
             <label>Anzahl Fahrer:
                 <input type="number" name="anzahl_fahrer" min="1" max="10" required
-                    value="<?php echo htmlspecialchars($anzahl_fahrer); ?>">
+                    value="<?php echo $anzahl_fahrer; ?>">
             </label>
 
             <br><br>
@@ -222,8 +231,8 @@ if (isset($_POST['kopieren'])) {
             <fieldset>
                 <legend>Schritt 2: Fahrer auswählen</legend>
 
-                <input type="hidden" name="renn_id" value="<?php echo htmlspecialchars($renn_id); ?>">
-                <input type="hidden" name="anzahl_fahrer" value="<?php echo htmlspecialchars($anzahl_fahrer); ?>">
+                <input type="hidden" name="renn_id" value="<?php echo $renn_id; ?>">
+                <input type="hidden" name="anzahl_fahrer" value="<?php echo $anzahl_fahrer; ?>">
 
                 <table border="1">
                     <?php for ($i = 1; $i <= $anzahl_fahrer; $i++):
@@ -234,8 +243,8 @@ if (isset($_POST['kopieren'])) {
                             <td>
                                 <select name="<?php echo $fahrerName; ?>">
                                     <?php foreach ($alle_fahrer as $fahrer):
-                                        $fahrerIdValue = htmlspecialchars($fahrer['Mitarbeiter-ID']);
-                                        $fahrerFullName = htmlspecialchars($fahrer['Vorname'] . ' ' . $fahrer['Nachname']);
+                                        $fahrerIdValue = $fahrer['Mitarbeiter-ID'];
+                                        $fahrerFullName = htmlentities($fahrer['Vorname'] . ' ' . $fahrer['Nachname']);
                                         ?>
                                         <option value="<?php echo $fahrerIdValue; ?>">
                                             <?php echo $fahrerFullName; ?>
@@ -274,9 +283,9 @@ if (isset($_POST['kopieren'])) {
                                 <p>
                                     <label>
                                         <input type="radio" name="altes_rennen"
-                                            value="<?php echo htmlspecialchars($rennen['RennId']); ?>">
-                                        Rennen <?php echo htmlspecialchars($rennen['RennId']); ?> –
-                                        <?php echo htmlspecialchars($rennen['Datum']); ?>
+                                            value="<?php echo $rennen['RennId']; ?>">
+                                        Rennen <?php echo $rennen['RennId']; ?> –
+                                        <?php echo $rennen['Datum']; ?>
                                     </label>
                                     <br>
                                     <small>Fahrer:
@@ -286,7 +295,7 @@ if (isset($_POST['kopieren'])) {
                                             $_SESSION['teamchef_loginname']
                                         );
                                         $namen = array_map(fn($f) => $f['Vorname'] . ' ' . $f['Nachname'], $fahrer_liste);
-                                        echo htmlspecialchars(implode(', ', $namen));
+                                        echo htmlentities(implode(', ', $namen));
                                         ?>
                                     </small>
                                 </p>
@@ -298,10 +307,10 @@ if (isset($_POST['kopieren'])) {
                                 <p>
                                     <label>
                                         <input type="radio" name="neues_rennen"
-                                            value="<?php echo htmlspecialchars($rennen['RennId']); ?>">
-                                        Rennen <?php echo htmlspecialchars($rennen['RennId']); ?> –
-                                        <?php echo htmlspecialchars($rennen['Datum']); ?> –
-                                        <?php echo htmlspecialchars($rennen['Ort']); ?>
+                                            value="<?php echo $rennen['RennId']; ?>">
+                                        Rennen <?php echo $rennen['RennId']; ?> –
+                                        <?php echo $rennen['Datum']; ?> –
+                                        <?php echo $rennen['Ort']; ?>
                                     </label>
                                 </p>
                             <?php endforeach; ?>

@@ -24,7 +24,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
 
 <body>
 
-    <h1>Willkommen <?php echo $_SESSION['veranstalter_loginname']; ?>!</h1>
+    <h1>Willkommen <?php echo htmlentities($_SESSION['veranstalter_loginname']); ?>!</h1>
 
     <p>Du bist jetzt eingeloggt.</p>
 
@@ -69,7 +69,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             </p>
             <p>
                 <label>Veranstalter</label><br>
-                <input value="<?php echo htmlspecialchars($_SESSION['veranstalter_loginname']); ?>" readonly>
+                <input value="<?php echo htmlentities($_SESSION['veranstalter_loginname']); ?>" readonly>
             </p>
 
             <p><input type="submit" name="anlegen" value="Anlegen">
@@ -109,11 +109,11 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
 
         } elseif (!is_numeric($kilometer)) {
 
-            echo "<p style='color:red;'>Kilometer muss eine Zahl sein!</p>";
+            echo "<p>Kilometer muss eine Zahl sein!</p>";
 
         } elseif (!is_numeric($hoehenmeter)) {
 
-            echo "<p style='color:red;'>Höhenmeter muss eine Zahl sein!</p>";
+            echo "<p>Höhenmeter muss eine Zahl sein!</p>";
 
         } else {
             $rennen_anlegen = new Rennen();

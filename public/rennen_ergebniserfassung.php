@@ -55,7 +55,7 @@ include_once('dbh.php');
         }
 
         public function ergebnisseSpeichern($renn_id, $mitarbeiter_id, $teamname, $platzierung, $zeit)
-        { 
+        {
             $sql = "UPDATE Teilnahme SET Platzierung = ?, Zeit = ? WHERE RennId = ? AND MitarbeiterId = ? AND Teamname = ?";
             $stmt = $this->connect()->prepare($sql);
             $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id, $teamname]);
@@ -67,6 +67,7 @@ include_once('dbh.php');
 
     $renn_id = "";
     $tabelle_anzeigen = false;
+    $vergebene_platzierungen = [];
 
     if (isset($_POST['rennen_auswaehlen'])) {
         if (!empty($_POST['rennid'])) {
@@ -104,6 +105,13 @@ include_once('dbh.php');
                 $fehler = true;
                 break;
             }
+            if (in_array($platzierung, $vergebene_platzierungen)) {
+                echo "Jede Platzierung darf nur einmal vergeben werden.";
+                $fehler = true;
+                break;
+            }
+
+            $vergebene_platzierungen[] = $platzierung;
         }
 
         if (!$fehler) {
@@ -117,7 +125,7 @@ include_once('dbh.php');
             echo "Ergebnisse wurden erfolgreich gespeichert!";
         }
 
-   
+
     }
 
 
@@ -141,7 +149,7 @@ include_once('dbh.php');
 
                 echo $rennen['Datum'] . ' - ';
 
-                echo $rennen['Ort'] . ' - ';
+                echo htmlentities($rennen['Ort']) . ' - ';
 
                 echo $rennen['Kilometer'] . ' km';
 
@@ -169,6 +177,7 @@ include_once('dbh.php');
 
             <table border="1" cellpadding="8">
                 <tr>
+                    
                     <th>Startnummer</th>
                     <th>Fahrer</th>
                     <th>Teamname</th>
@@ -181,8 +190,8 @@ include_once('dbh.php');
                     echo '<tr>';
 
                     echo '<td>' . $fahrer['Startnummer'] . '</td>';
-                    echo '<td>' . $fahrer['Vorname'] . ' ' . $fahrer['Nachname'] . '</td>';
-                    echo '<td>' . $fahrer['Teamname'] . '</td>';
+                    echo '<td>' . htmlentities($fahrer['Vorname']) . ' ' . htmlentities($fahrer['Nachname']) . '</td>';
+                    echo '<td>' . htmlentities($fahrer['Teamname']) . '</td>';
 
                     echo '<td>';
                     echo '<select name="platzierung_' . $fahrer['MitarbeiterId'] . '" required>';
@@ -198,7 +207,7 @@ include_once('dbh.php');
                     echo '<td><input type="time" name="zeit_' . $fahrer['MitarbeiterId'] . '" step="1" required></td>';
 
                     echo '<input type="hidden" name="mitarbeiter_ids[]" value="' . $fahrer['MitarbeiterId'] . '">';
-                    echo '<input type="hidden" name="teamname_' . $fahrer['MitarbeiterId'] . '" value="' . $fahrer['Teamname'] . '">';
+                    echo '<input type="hidden" name="teamname_' . $fahrer['MitarbeiterId'] . '" value="' . htmlentities($fahrer['Teamname']) . '">';
 
                     echo '</tr>';
                 }
