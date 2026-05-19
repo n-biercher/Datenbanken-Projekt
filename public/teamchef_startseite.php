@@ -12,7 +12,7 @@ include_once('dbh.php');
 
 class Rennen extends Dbh
 {
-    #Holt alle Rennen, die in der Zukunft liegen aus der Datenbank
+    //Holt alle Rennen, die in der Zukunft liegen aus der Datenbank
     public function alleRennenHolen()
     {
         $sql = "SELECT * FROM Rennen WHERE Datum >= CURDATE() ORDER BY Datum ASC";
@@ -20,7 +20,7 @@ class Rennen extends Dbh
         return $stmt->fetchAll();
     }
 
-    #Holt alle Rennen, an denen Fahrer des Teams teilnehmen, aus der Datenbank
+    //Holt alle Rennen, an denen Fahrer des Teams teilnehmen, aus der Datenbank
     public function rennenMitTeilnahmenHolen($teamchef_loginname)
     {
         $sql = "SELECT DISTINCT r.RennId, r.Datum, r.Ort, r.Kilometer
@@ -36,7 +36,7 @@ class Rennen extends Dbh
         return $stmt->fetchAll();
     }
 
-    #Holt alle Fahrer eines bestimmten Rennens, die zum Teamchef gehören, aus der Datenbank
+    //Holt alle Fahrer eines bestimmten Rennens, die zum Teamchef gehören, aus der Datenbank
     public function fahrerNachRennenHolen($renn_id, $teamchef_loginname)
     {
         $sql = "SELECT f.Vorname, f.Nachname
@@ -50,7 +50,7 @@ class Rennen extends Dbh
         return $stmt->fetchAll();
     }
 
-    #Holt alle Fahrer eines Teamchefs aus der Datenbank
+    //Holt alle Fahrer eines Teamchefs aus der Datenbank
     public function alleFahrerHolen($teamchef_loginname)
     {
         $sql = "SELECT Fahrer.`Mitarbeiter-ID`, Fahrer.Vorname, Fahrer.Nachname
@@ -63,7 +63,7 @@ class Rennen extends Dbh
         return $stmt->fetchAll();
     }
 
-    #Meldet einen Fahrer zu einem Rennen an
+    //Meldet einen Fahrer zu einem Rennen an
     public function fahrerAnmelden($mitarbeiter_id, $renn_id)
     {
         $sql_team = "SELECT Teamname FROM Fahrer WHERE `Mitarbeiter-ID` = ?";
@@ -90,7 +90,7 @@ class Rennen extends Dbh
         return true;
     }
 
-    #Kopiert die Fahreranmeldungen von einem Rennen zu einem anderen Rennen
+    //Kopiert die Fahreranmeldungen von einem Rennen zu einem anderen Rennen
     public function teilnahmenKopieren($altes_rennen, $neues_rennen)
     {
         $stmt = $this->connect()->prepare("CALL kopiere_anmeldungen(?, ?)");
@@ -128,6 +128,7 @@ if (isset($_POST['fahrer_anmelden'])) {
     $renn_id = $_POST['renn_id'];
     $doppelt = false;
     $ausgewaehlte_fahrer = [];
+
     for ($i = 1; $i <= $_POST['anzahl_fahrer']; $i++) {
         $mitarbeiter_id = $_POST['fahrer_' . $i];
 
@@ -142,12 +143,13 @@ if (isset($_POST['fahrer_anmelden'])) {
         $angemeldet = $rennen_objekt->fahrerAnmelden($mitarbeiter_id, $renn_id);
 
         if (!$angemeldet) {
+            $fehlermeldung = "Dieser Fahrer ist bereits für dieses Rennen angemeldet!";
             $doppelt = true;
+            break;
         }
     }
-    if ($doppelt) {
-        $fehlermeldung = "Dieser Fahrer ist bereits für dieses Rennen angemeldet!";
-    } else {
+
+    if (!$doppelt) {
         $erfolgsmeldung = "Fahrer wurden erfolgreich angemeldet!";
     }
 }
@@ -185,10 +187,10 @@ if (isset($_POST['kopieren'])) {
     <p><a href="team_verwalten.php">Team verwalten</a></p>
 
     <?php if (!empty($fehlermeldung)): ?>
-        <p style="color:red"><?php echo $fehlermeldung; ?></p>
+        <p><?php echo $fehlermeldung; ?></p>
     <?php endif; ?>
     <?php if (!empty($erfolgsmeldung)): ?>
-        <p style="color:green"><?php echo $erfolgsmeldung; ?></p>
+        <p><?php echo $erfolgsmeldung; ?></p>
     <?php endif; ?>
 
     <!-- Fahrer manuell anmelden  -->
@@ -202,7 +204,7 @@ if (isset($_POST['kopieren'])) {
                 $isChecked = ($renn_id == $rennen['RennId']) ? 'checked' : '';
                 $rennId = $rennen['RennId'];
                 $datum = $rennen['Datum'];
-                $ort = htmlentities($rennen['Ort']);
+                $ort = $rennen['Ort'];
                 $kilometer = $rennen['Kilometer'];
                 ?>
                 <p>
@@ -217,8 +219,7 @@ if (isset($_POST['kopieren'])) {
             <?php endforeach; ?>
 
             <label>Anzahl Fahrer:
-                <input type="number" name="anzahl_fahrer" min="1" max="10" required
-                    value="<?php echo $anzahl_fahrer; ?>">
+                <input type="number" name="anzahl_fahrer" min="1" value="<?php echo $anzahl_fahrer; ?>" required>
             </label>
 
             <br><br>
@@ -241,13 +242,13 @@ if (isset($_POST['kopieren'])) {
                         <tr>
                             <td><?php echo $i; ?></td>
                             <td>
-                                <select name="<?php echo $fahrerName; ?>">
+                                <select name="<?php echo $fahrerName; ?>" required>
                                     <?php foreach ($alle_fahrer as $fahrer):
                                         $fahrerIdValue = $fahrer['Mitarbeiter-ID'];
-                                        $fahrerFullName = htmlentities($fahrer['Vorname'] . ' ' . $fahrer['Nachname']);
+                                        $fahrerFullName = $fahrer['Vorname'] . ' ' . $fahrer['Nachname'];
                                         ?>
                                         <option value="<?php echo $fahrerIdValue; ?>">
-                                            <?php echo $fahrerFullName; ?>
+                                            <?php echo htmlentities($fahrerFullName); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -282,8 +283,7 @@ if (isset($_POST['kopieren'])) {
                             <?php foreach ($rennen_mit_teilnahmen as $rennen): ?>
                                 <p>
                                     <label>
-                                        <input type="radio" name="altes_rennen"
-                                            value="<?php echo $rennen['RennId']; ?>">
+                                        <input type="radio" name="altes_rennen" value="<?php echo $rennen['RennId']; ?>">
                                         Rennen <?php echo $rennen['RennId']; ?> –
                                         <?php echo $rennen['Datum']; ?>
                                     </label>
@@ -306,11 +306,10 @@ if (isset($_POST['kopieren'])) {
                             <?php foreach ($alle_rennen as $rennen): ?>
                                 <p>
                                     <label>
-                                        <input type="radio" name="neues_rennen"
-                                            value="<?php echo $rennen['RennId']; ?>">
+                                        <input type="radio" name="neues_rennen" value="<?php echo $rennen['RennId']; ?>">
                                         Rennen <?php echo $rennen['RennId']; ?> –
                                         <?php echo $rennen['Datum']; ?> –
-                                        <?php echo $rennen['Ort']; ?>
+                                        <?php echo htmlentities($rennen['Ort']); ?>
                                     </label>
                                 </p>
                             <?php endforeach; ?>

@@ -10,6 +10,105 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
 
 include_once('dbh.php');
 
+class Ergebniserfassung extends Dbh
+{
+
+    public function vergangeneRennenHolen($veranstalter_loginname)
+    {
+        $sql = "SELECT * 
+            FROM Rennen 
+            WHERE Datum < CURDATE() 
+            AND VeranstalterLoginName = ? 
+            ORDER BY Datum DESC";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$veranstalter_loginname]);
+        return $stmt->fetchAll();
+    }
+    public function fahrerZuRennenHolen($renn_id)
+    {
+        $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname, f.Nachname FROM Teilnahme t JOIN Fahrer f 
+            ON t.MitarbeiterId = f.`Mitarbeiter-ID` AND t.Teamname = f.Teamname WHERE t.RennId = ? ORDER BY t.Startnummer ASC";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$renn_id]);
+        return $stmt->fetchAll();
+
+    }
+
+    public function ergebnisseSpeichern($renn_id, $mitarbeiter_id, $platzierung, $zeit)
+    {
+        $sql = "UPDATE Teilnahme SET Platzierung = ?, Zeit = ? WHERE RennId = ? AND MitarbeiterId = ?";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id]);
+    }
+}
+
+$erfassung_objekt = new Ergebniserfassung();
+$vergangeneRennen = $erfassung_objekt->vergangeneRennenHolen($_SESSION['veranstalter_loginname']);
+
+$renn_id = "";
+$tabelle_anzeigen = false;
+$vergebene_platzierungen = [];
+
+if (isset($_POST['rennen_auswaehlen'])) {
+    if (!empty($_POST['rennid'])) {
+        $renn_id = $_POST['rennid'];
+        $tabelle_anzeigen = true;
+    } else {
+        echo "Bitte wähle ein Rennen aus.";
+    }
+}
+
+if ($tabelle_anzeigen) {
+    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
+}
+
+if (isset($_POST['ergebnisse_speichern'])) {
+    $renn_id = $_POST['renn_id'];
+    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
+
+    $max_platzierung = count($fahrer_liste);
+    $fehler = false;
+
+    foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+        $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
+        $zeit = $_POST['zeit_' . $mitarbeiter_id];
+
+        if (empty($platzierung) || empty($zeit)) {
+            echo "Bitte fülle alle Platzierungen und Zeiten aus.";
+            $fehler = true;
+            break;
+        }
+
+        if ($platzierung < 1 || $platzierung > $max_platzierung) {
+            echo "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
+            $fehler = true;
+            break;
+        }
+        if (in_array($platzierung, $vergebene_platzierungen)) {
+            echo "Jede Platzierung darf nur einmal vergeben werden.";
+            $fehler = true;
+            break;
+        }
+
+        $vergebene_platzierungen[] = $platzierung;
+    }
+
+    if (!$fehler) {
+        foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+            $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
+            $zeit = $_POST['zeit_' . $mitarbeiter_id];
+
+            $erfassung_objekt->ergebnisseSpeichern($renn_id, $mitarbeiter_id, $platzierung, $zeit);
+        }
+        echo "Ergebnisse wurden erfolgreich gespeichert!";
+    }
+
+
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -24,114 +123,6 @@ include_once('dbh.php');
     <h1>Rennen Ergebniserfassung</h1>
 
     <p><a href="logout.php">Logout</a></p>
-
-
-
-    <?php
-    class Ergebniserfassung extends Dbh
-    {
-
-        public function vergangeneRennenHolen($veranstalter_loginname)
-        {
-            $sql = "SELECT * 
-            FROM Rennen 
-            WHERE Datum < CURDATE() 
-            AND VeranstalterLoginName = ? 
-            ORDER BY Datum DESC";
-
-            $stmt = $this->connect()->prepare($sql);
-            $stmt->execute([$veranstalter_loginname]);
-            return $stmt->fetchAll();
-        }
-        public function fahrerZuRennenHolen($renn_id)
-        {
-            $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname, f.Nachname FROM Teilnahme t JOIN Fahrer f 
-            ON t.MitarbeiterId = f.`Mitarbeiter-ID` AND t.Teamname = f.Teamname WHERE t.RennId = ? ORDER BY t.Startnummer ASC";
-
-            $stmt = $this->connect()->prepare($sql);
-            $stmt->execute([$renn_id]);
-            return $stmt->fetchAll();
-
-        }
-
-        public function ergebnisseSpeichern($renn_id, $mitarbeiter_id, $teamname, $platzierung, $zeit)
-        {
-            $sql = "UPDATE Teilnahme SET Platzierung = ?, Zeit = ? WHERE RennId = ? AND MitarbeiterId = ? AND Teamname = ?";
-            $stmt = $this->connect()->prepare($sql);
-            $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id, $teamname]);
-        }
-    }
-
-    $erfassung_objekt = new Ergebniserfassung();
-    $vergangeneRennen = $erfassung_objekt->vergangeneRennenHolen($_SESSION['veranstalter_loginname']);
-
-    $renn_id = "";
-    $tabelle_anzeigen = false;
-    $vergebene_platzierungen = [];
-
-    if (isset($_POST['rennen_auswaehlen'])) {
-        if (!empty($_POST['rennid'])) {
-            $renn_id = $_POST['rennid'];
-            $tabelle_anzeigen = true;
-        } else {
-            echo "Bitte wähle ein Rennen aus.";
-        }
-    }
-
-    if ($tabelle_anzeigen) {
-        $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
-    }
-
-    if (isset($_POST['ergebnisse_speichern'])) {
-        $renn_id = $_POST['renn_id'];
-        $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
-
-        $max_plazierung = count($fahrer_liste);
-        $fehler = false;
-
-        foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-            $teamname = $_POST['teamname_' . $mitarbeiter_id];
-            $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
-            $zeit = $_POST['zeit_' . $mitarbeiter_id];
-
-            if (empty($platzierung) || empty($zeit)) {
-                echo "Bitte fülle alle Platzierungen und Zeiten aus.";
-                $fehler = true;
-                break;
-            }
-
-            if ($platzierung < 1 || $platzierung > $max_plazierung) {
-                echo "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
-                $fehler = true;
-                break;
-            }
-            if (in_array($platzierung, $vergebene_platzierungen)) {
-                echo "Jede Platzierung darf nur einmal vergeben werden.";
-                $fehler = true;
-                break;
-            }
-
-            $vergebene_platzierungen[] = $platzierung;
-        }
-
-        if (!$fehler) {
-            foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-                $teamname = $_POST['teamname_' . $mitarbeiter_id];
-                $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
-                $zeit = $_POST['zeit_' . $mitarbeiter_id];
-
-                $erfassung_objekt->ergebnisseSpeichern($renn_id, $mitarbeiter_id, $teamname, $platzierung, $zeit);
-            }
-            echo "Ergebnisse wurden erfolgreich gespeichert!";
-        }
-
-
-    }
-
-
-
-
-    ?>
 
     <form action="" method="POST">
         <fieldset>
@@ -177,7 +168,7 @@ include_once('dbh.php');
 
             <table border="1" cellpadding="8">
                 <tr>
-                    
+
                     <th>Startnummer</th>
                     <th>Fahrer</th>
                     <th>Teamname</th>
@@ -207,7 +198,7 @@ include_once('dbh.php');
                     echo '<td><input type="time" name="zeit_' . $fahrer['MitarbeiterId'] . '" step="1" required></td>';
 
                     echo '<input type="hidden" name="mitarbeiter_ids[]" value="' . $fahrer['MitarbeiterId'] . '">';
-                    echo '<input type="hidden" name="teamname_' . $fahrer['MitarbeiterId'] . '" value="' . htmlentities($fahrer['Teamname']) . '">';
+
 
                     echo '</tr>';
                 }

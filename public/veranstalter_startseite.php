@@ -7,6 +7,55 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
     header("Location: veranstalter_login.php");
     exit();
 }
+include_once 'dbh.php';
+
+$meldung = "";
+
+class Rennen extends Dbh
+{
+
+    //Neues Rennen anlegen
+    public function rennenAnlegen($datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter)
+    {
+        $sql = "INSERT INTO Rennen (Datum, PLZ, Ort, Kilometer, Steigung, Hoehenmeter, VeranstalterLoginName) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']]);
+    }
+
+}
+
+// Formularverarbeitung
+if (isset($_POST['anlegen'])) {
+    $datum = $_POST['datum'];
+    $plz = $_POST['plz'];
+    $ort = $_POST['ort'];
+    $kilometer = $_POST['kilometer'];
+    $hoehenmeter = $_POST['hoehenmeter'];
+    $maximale_steigung = $_POST['maximale_steigung'];
+
+    if (!is_numeric($maximale_steigung)) {
+        echo "<p>Maximale Steigung muss eine Zahl sein!</p>";
+
+    } elseif ($maximale_steigung > 100) {
+        echo "<p>Fehler: Maximale Steigung darf nicht größer als 100% sein!</p>";
+
+
+    } elseif (!is_numeric($hoehenmeter)) {
+
+        echo "<p>Höhenmeter muss eine Zahl sein!</p>";
+
+    } elseif (!is_numeric($kilometer)) {
+
+        echo "<p>Kilometer muss eine Zahl sein!</p>";
+
+    } else {
+        $rennen_anlegen = new Rennen();
+        $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
+        $meldung = "<p>Rennen erfolgreich angelegt!</p>";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -21,6 +70,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             width: 250px;
         }
     </style>
+</head>
 
 <body>
 
@@ -44,28 +94,30 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
             </p>
             <p>
                 <label for="datum">Datum</label><br>
-                <input id="datum" name="datum" type="date">
+                <input id="datum" name="datum" type="date" required>
             </p>
             <p>
                 <label for="plz">PLZ</label><br>
-                <input id="plz" name="plz" maxlength="5" placeholder="Postleitzahl">
+                <input id="plz" name="plz" maxlength="5" placeholder="Postleitzahl" required>
             </p>
             <p>
                 <label for="ort">Ort</label><br>
-                <input id="ort" name="ort" placeholder="Ort des Rennens">
+                <input id="ort" name="ort" placeholder="Ort des Rennens" required>
             </p>
             <p>
                 <label for="kilometer">Kilometer</label><br>
-                <input id="kilometer" name="kilometer" placeholder="Zu fahrende Kilometer"> Km
+                <input type="number" id="kilometer" name="kilometer" placeholder="Zu fahrende Kilometer" step="0.1"
+                    min="0" required> Km
             </p>
             <p>
                 <label for="hoehenmeter">Höhenmeter</label><br>
-                <input id="hoehenmeter" name="hoehenmeter" placeholder="Zu fahrende Höhenmeter">
+                <input type="number" id="hoehenmeter" name="hoehenmeter" placeholder="Zu fahrende Höhenmeter" step="1"
+                    min="0" required>
             </p>
             <p>
                 <label for="maximale_steigung">Maximale Steigung (%)</label><br>
                 <input type="number" id="maximale_steigung" name="maximale_steigung"
-                    placeholder="Maximale Steigung in %" step="1" min="0" max="100"> %
+                    placeholder="Maximale Steigung in %" step="1" min="0" max="100" required> %
             </p>
             <p>
                 <label>Veranstalter</label><br>
@@ -78,49 +130,7 @@ if (!isset($_SESSION['veranstalter_loginname'])) {
         </fieldset>
     </form>
 
-    <?php
-
-    include_once 'dbh.php';
-
-    class Rennen extends Dbh
-    {
-        public function rennenAnlegen($datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter)
-        {
-            $sql = "INSERT INTO Rennen (Datum, PLZ, Ort, Kilometer, Steigung, Hoehenmeter, VeranstalterLoginName) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-            $stmt = $this->connect()->prepare($sql);
-            $stmt->execute([$datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']]);
-            echo "Rennen erfolgreich angelegt!";
-        }
-
-    }
-
-    if (isset($_POST['anlegen'])) {
-        $datum = $_POST['datum'];
-        $plz = $_POST['plz'];
-        $ort = $_POST['ort'];
-        $kilometer = $_POST['kilometer'];
-        $hoehenmeter = $_POST['hoehenmeter'];
-        $maximale_steigung = $_POST['maximale_steigung'];
-
-        if ($maximale_steigung > 100) {
-            echo "Fehler: Maximale Steigung darf nicht größer als 100% sein!";
-
-        } elseif (!is_numeric($kilometer)) {
-
-            echo "<p>Kilometer muss eine Zahl sein!</p>";
-
-        } elseif (!is_numeric($hoehenmeter)) {
-
-            echo "<p>Höhenmeter muss eine Zahl sein!</p>";
-
-        } else {
-            $rennen_anlegen = new Rennen();
-            $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
-        }
-    }
-    ?>
+    <?php echo $meldung; ?>
 
 
 </body>
