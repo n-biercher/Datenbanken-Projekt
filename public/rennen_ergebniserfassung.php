@@ -1,12 +1,8 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-session_start();
-
-if (!isset($_SESSION['veranstalter_loginname'])) {
-    header("Location: veranstalter_login.php");
-    exit();
-}
+include_once('login_schutz.php');
+checkLogin('veranstalter_loginname', 'veranstalter_login.php');
 
 include_once('dbh.php');
 

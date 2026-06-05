@@ -1,12 +1,8 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-session_start();
-
-if (!isset($_SESSION['teamchef_loginname'])) {
-    header("Location: teamchef_anmelden.php");
-    exit();
-}
+include_once('login_schutz.php');
+checkLogin('teamchef_loginname', 'teamchef_login.php');
 
 include_once('dbh.php');
 
@@ -64,31 +60,34 @@ class Rennen extends Dbh
     }
 
     //Meldet einen Fahrer zu einem Rennen an
-    public function fahrerAnmelden($mitarbeiter_id, $renn_id)
-    {
-        $sql_team = "SELECT Teamname FROM Fahrer WHERE `Mitarbeiter-ID` = ?";
-        $stmt_team = $this->connect()->prepare($sql_team);
-        $stmt_team->execute([$mitarbeiter_id]);
-        $fahrer = $stmt_team->fetch();
+public function fahrerAnmelden($mitarbeiter_id, $renn_id, $teamchef_loginname)
 
-        if (!$fahrer) {
-            return false;
-        }
+{
 
-        $sql_check = "SELECT COUNT(*) FROM Teilnahme WHERE MitarbeiterId = ? AND Teamname = ? AND RennId = ?";
-        $stmt_check = $this->connect()->prepare($sql_check);
-        $stmt_check->execute([$mitarbeiter_id, $fahrer['Teamname'], $renn_id]);
-        if ($stmt_check->fetchColumn() > 0) {
-            return false;
-        }
+    $sql_team = "SELECT f.Teamname FROM Fahrer f JOIN Team t ON f.Teamname = t.Teamname WHERE f.`Mitarbeiter-ID` = ? AND t.TeamchefLoginName = ?";
 
-        $sql_insert = "INSERT INTO Teilnahme (MitarbeiterId, Teamname, RennId)
-                       VALUES (?, ?, ?)";
-        $stmt_insert = $this->connect()->prepare($sql_insert);
-        $stmt_insert->execute([$mitarbeiter_id, $fahrer['Teamname'], $renn_id]);
+    $stmt_team = $this->connect()->prepare($sql_team);
+    $stmt_team->execute([$mitarbeiter_id, $teamchef_loginname]);
+    $fahrer = $stmt_team->fetch();
 
-        return true;
+    if (!$fahrer) {
+        return false;
     }
+
+    $sql_check = "SELECT COUNT(*) FROM Teilnahme WHERE MitarbeiterId = ? AND Teamname = ? AND RennId = ?";
+    $stmt_check = $this->connect()->prepare($sql_check);
+    $stmt_check->execute([$mitarbeiter_id, $fahrer['Teamname'], $renn_id]);
+
+    if ($stmt_check->fetchColumn() > 0) {
+        return false;
+    }
+
+    $sql_insert = "INSERT INTO Teilnahme (MitarbeiterId, Teamname, RennId) VALUES (?, ?, ?)";
+    $stmt_insert = $this->connect()->prepare($sql_insert);
+    $stmt_insert->execute([$mitarbeiter_id, $fahrer['Teamname'], $renn_id]);
+
+    return true;
+}
 
     //Kopiert die Fahreranmeldungen von einem Rennen zu einem anderen Rennen
     public function teilnahmenKopieren($altes_rennen, $neues_rennen)
@@ -116,9 +115,16 @@ if (isset($_POST['kopieren_anzeigen'])) {
 
 if (isset($_POST['rennen_auswaehlen'])) {
     if (!empty($_POST['rennid']) && !empty($_POST['anzahl_fahrer'])) {
+
         $renn_id = $_POST['rennid'];
         $anzahl_fahrer = (int) $_POST['anzahl_fahrer'];
+
+        if($anzahl_fahrer > count($alle_fahrer)) {
+            $fehlermeldung = "Die Anzahl der Fahrer darf nicht größer sein als die Anzahl der Fahrer im Team!";
+        } else {
         $formular_anzeigen = true;
+
+        }
     } else {
         $fehlermeldung = "Bitte wähle ein Rennen aus und gib die Anzahl der Fahrer an.";
     }
@@ -140,7 +146,7 @@ if (isset($_POST['fahrer_anmelden'])) {
 
         $ausgewaehlte_fahrer[] = $mitarbeiter_id;
 
-        $angemeldet = $rennen_objekt->fahrerAnmelden($mitarbeiter_id, $renn_id);
+        $angemeldet = $rennen_objekt->fahrerAnmelden($mitarbeiter_id, $renn_id, $_SESSION['teamchef_loginname']);
 
         if (!$angemeldet) {
             $fehlermeldung = "Dieser Fahrer ist bereits für dieses Rennen angemeldet!";
@@ -219,7 +225,7 @@ if (isset($_POST['kopieren'])) {
             <?php endforeach; ?>
 
             <label>Anzahl Fahrer:
-                <input type="number" name="anzahl_fahrer" min="1" value="<?php echo $anzahl_fahrer; ?>" required>
+                <input type="number" name="anzahl_fahrer" min="1" max =<?php echo count ($alle_fahrer); ?> value="<?php echo $anzahl_fahrer; ?>" required>
             </label>
 
             <br><br>

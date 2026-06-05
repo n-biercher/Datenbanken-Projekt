@@ -1,12 +1,9 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-session_start();
+include_once('login_schutz.php');
+checkLogin('veranstalter_loginname', 'veranstalter_login.php');
 
-if (!isset($_SESSION['veranstalter_loginname'])) {
-    header("Location: veranstalter_login.php");
-    exit();
-}
 include_once 'dbh.php';
 
 $meldung = "";
@@ -49,6 +46,11 @@ if (isset($_POST['anlegen'])) {
     } elseif (!is_numeric($kilometer)) {
 
         echo "<p>Kilometer muss eine Zahl sein!</p>";
+
+
+    } elseif (!is_numeric($plz)) {
+
+        echo "<p>Postleitzahl muss eine Zahl sein!</p>";
 
     } else {
         $rennen_anlegen = new Rennen();
