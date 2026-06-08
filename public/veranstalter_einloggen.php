@@ -1,7 +1,8 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-session_start();
+include_once('session_management.php');
+sitzungStarten();
 
 include_once 'dbh.php';
 

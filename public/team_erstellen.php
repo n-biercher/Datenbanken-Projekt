@@ -1,4 +1,39 @@
 <!-- Nicolas Biercher Beginn -->
+<?php
+include_once('session_management.php');
+sitzungStarten();
+include_once('TeamErstellung.php');
+
+$meldung = '';
+$fehler  = '';
+
+if (isset($_POST['registrieren'])) {
+    $teamname      = trim($_POST['teamname']             ?? '');
+    $vorname       = trim($_POST['vorname']              ?? '');
+    $nachname      = trim($_POST['nachname']             ?? '');
+    $loginname     = trim($_POST['loginname']            ?? '');
+    $kennwort      = $_POST['kennwort']                  ?? '';
+    $kennwort_best = $_POST['kennwort_bestaetigung']     ?? '';
+
+    if (empty($teamname) || empty($vorname) || empty($nachname) || empty($loginname) || empty($kennwort) || empty($kennwort_best)) {
+        $fehler = "Bitte alle Felder ausfüllen!";
+    } elseif (strlen($loginname) > 50) {
+        $fehler = "Loginname darf maximal 50 Zeichen lang sein!";
+    } else {
+        try {
+            $reg    = new TeamRegistrierung();
+            $fehler = $reg->registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_best);
+
+            if ($fehler === null) {
+                $meldung = "Registrierung erfolgreich!";
+                $fehler  = '';
+            }
+        } catch (PDOException $e) {
+            $fehler = "Fehler bei der Registrierung.";
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -9,6 +44,14 @@
 <body>
 
 <h1>Team erstellen</h1>
+
+<?php if ($meldung !== ''): ?>
+    <p><?php echo htmlspecialchars($meldung); ?></p>
+<?php endif; ?>
+
+<?php if ($fehler !== ''): ?>
+    <p><?php echo htmlspecialchars($fehler); ?></p>
+<?php endif; ?>
 
 <form action="" method="POST">
     <fieldset>
@@ -53,111 +96,6 @@
         </p>
     </fieldset>
 </form>
-
-<?php
-
-include_once 'dbh.php';
-
-class TeamRegistrierung extends Dbh
-{
-    private function istKennwortSicher($kennwort)
-    {
-        // Mindestlänge 8 Zeichen
-        if (strlen($kennwort) < 8) {
-            return "Das Kennwort muss mindestens 8 Zeichen lang sein";
-        }
-
-        // Mindestens ein Großbuchstabe
-        if (!preg_match('/[A-Z]/', $kennwort)) {
-            return "Das Kennwort muss mindestens einen Großbuchstaben enthalten";
-        }
-
-        // Mindestens ein Kleinbuchstabe
-        if (!preg_match('/[a-z]/', $kennwort)) {
-            return "Das Kennwort muss mindestens einen Kleinbuchstaben enthalten";
-        }
-
-        // Mindestens eine Zahl
-        if (!preg_match('/[0-9]/', $kennwort)) {
-            return "Das Kennwort muss mindestens eine Zahl enthalten";
-        }
-
-        // Mindestens ein Sonderzeichen
-        if (!preg_match('/[\W_]/', $kennwort)) {
-            return "Das Kennwort muss mindestens ein Sonderzeichen enthalten";
-        }
-
-        return true;
-    }
-
-    public function registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_bestaetigung)
-    {
-        if ($kennwort !== $kennwort_bestaetigung) {
-            echo "Kennwörter stimmen nicht überein";
-            return;
-        }
-
-        $sicherheitsprüfung_passwort = $this->istKennwortSicher($kennwort);
-        if ($sicherheitsprüfung_passwort !== true) {
-            echo $sicherheitsprüfung_passwort;
-            return;
-        }
-
-        $db_verbindung = $this->connect();
-
-        try {
-            $db_verbindung->beginTransaction();
-
-            $loginname_query = $db_verbindung->prepare("SELECT * FROM Teamchef WHERE TeamchefLoginName = ?");
-            $loginname_query->execute([$loginname]);
-            if ($loginname_query->fetch()) {
-                echo "Loginname existiert bereits";
-                return;
-            }
-
-            $teamname_query = $db_verbindung->prepare("SELECT * FROM Team WHERE Teamname = ?");
-            $teamname_query->execute([$teamname]);
-            if ($teamname_query->fetch()) {
-                echo "Teamname existiert bereits";
-                return;
-            }
-
-            $hash = password_hash($kennwort, PASSWORD_DEFAULT);
-
-            $teamchef_erstellen_query = $db_verbindung->prepare("
-                INSERT INTO Teamchef (TeamchefLoginName, Kennwort, Vorname, Nachname)
-                VALUES (?, ?, ?, ?)
-            ");
-            $teamchef_erstellen_query->execute([$loginname, $hash, $vorname, $nachname]);
-
-            $team_erstellen_query = $db_verbindung->prepare("
-                INSERT INTO Team (Teamname, TeamchefLoginName)
-                VALUES (?, ?)
-            ");
-            $team_erstellen_query->execute([$teamname, $loginname]);
-
-            $db_verbindung->commit();
-
-            echo "Registrierung erfolgreich!";
-        } catch (PDOException $e) {
-            $db_verbindung->rollBack();
-            echo "Fehler: " . $e->getMessage();
-        }
-    }
-}
-
-if (isset($_POST['registrieren'])) {
-    $reg = new TeamRegistrierung();
-    $reg->registrieren(
-        $_POST['teamname'],
-        $_POST['vorname'],
-        $_POST['nachname'],
-        $_POST['loginname'],
-        $_POST['kennwort'],
-        $_POST['kennwort_bestaetigung']
-    );
-}
-?>
 
 </body>
 </html>

@@ -1,8 +1,9 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('login_schutz.php');
-checkLogin('veranstalter_loginname', 'veranstalter_login.php');
+include_once('session_management.php');
+sitzungStarten();
+zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
 
 include_once 'dbh.php';
 

@@ -1,8 +1,9 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('login_schutz.php');
-checkLogin('teamchef_loginname', 'teamchef_login.php');
+include_once('session_management.php');
+sitzungStarten();
+zugriffPruefen('teamchef_loginname', 'teamchef_anmelden.php');
 
 include_once('dbh.php');
 

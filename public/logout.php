@@ -1,6 +1,7 @@
 <?php
-session_start();
-session_destroy();
+include_once('session_management.php');
+sitzungBeenden();
 
 header("Location: index.php");
 exit();
+?>

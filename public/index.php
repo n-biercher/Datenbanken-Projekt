@@ -1,6 +1,7 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
-session_start();
+include_once('session_management.php');
+sitzungStarten();
 ?>
 
 <!DOCTYPE html>
@@ -12,7 +13,7 @@ session_start();
 </head>
 <body>
 
-<h1>Willkommen zum Stadtradeln</h1>
+<h1>Willkommen zum Radrennen</h1>
 
 <?php if (isset($_SESSION['teamchef_loginname'])): ?>
 
