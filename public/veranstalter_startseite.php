@@ -7,7 +7,8 @@ zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
 
 include_once 'dbh.php';
 
-$meldung = "";
+$fehlermeldung = "";
+$erfolgsmeldung = "";
 
 class Rennen extends Dbh
 {
@@ -15,11 +16,17 @@ class Rennen extends Dbh
     //Neues Rennen anlegen
     public function rennenAnlegen($datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter)
     {
-        $sql = "INSERT INTO Rennen (Datum, PLZ, Ort, Kilometer, Steigung, Hoehenmeter, VeranstalterLoginName) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try {
+            $sql = "INSERT INTO Rennen (Datum, PLZ, Ort, Kilometer, Steigung, Hoehenmeter, VeranstalterLoginName) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']]);
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([$datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']]);
+
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
     }
 
 }
@@ -34,29 +41,29 @@ if (isset($_POST['anlegen'])) {
     $maximale_steigung = $_POST['maximale_steigung'];
 
     if (!is_numeric($maximale_steigung)) {
-        echo "<p>Maximale Steigung muss eine Zahl sein!</p>";
+        $fehlermeldung = "Maximale Steigung muss eine Zahl sein!";
 
     } elseif ($maximale_steigung > 100) {
-        echo "<p>Fehler: Maximale Steigung darf nicht größer als 100% sein!</p>";
-
-
+        $fehlermeldung = "Fehler: Maximale Steigung darf nicht größer als 100% sein!";
     } elseif (!is_numeric($hoehenmeter)) {
 
-        echo "<p>Höhenmeter muss eine Zahl sein!</p>";
+        $fehlermeldung = "Höhenmeter muss eine Zahl sein!";
 
     } elseif (!is_numeric($kilometer)) {
 
-        echo "<p>Kilometer muss eine Zahl sein!</p>";
-
-
-    } elseif (!is_numeric($plz)) {
-
-        echo "<p>Postleitzahl muss eine Zahl sein!</p>";
+        $fehlermeldung = "Kilometer muss eine Zahl sein!";
+    } elseif (strlen($plz) != 5 || !ctype_digit($plz)) {
+        $fehlermeldung = "Postleitzahl muss aus genau 5 Ziffern bestehen!";
 
     } else {
         $rennen_anlegen = new Rennen();
-        $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
-        $meldung = "<p>Rennen erfolgreich angelegt!</p>";
+        $gespeichert = $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
+
+        if ($gespeichert) {
+            $erfolgsmeldung = "Rennen erfolgreich angelegt!";
+        } else {
+            $fehlermeldung = "Fehler beim Anlegen des Rennens.";
+        }
     }
 }
 ?>
@@ -88,12 +95,22 @@ if (isset($_POST['anlegen'])) {
 
     <h2>Neues Rennen anlegen</h2>
 
+    <?php if (!empty($fehlermeldung)): ?>
+        <p><?php echo $fehlermeldung; ?></p>
+    <?php endif; ?>
+
+    <?php if (!empty($erfolgsmeldung)): ?>
+        <p><?php echo $erfolgsmeldung; ?></p>
+    <?php endif; ?>
+
+
     <form action="" method="POST">
         <fieldset>
-            <legend>Bitte gebe die Daten für das Rennen unten ein</legend>
+            <legend>Bitte gib die Daten für das Rennen unten ein</legend>
+
             <p>
                 <label for="rennid">Renn-ID</label><br>
-                <input id="rennid" value="Wird automatisch vergeben" disabled>
+                <input id="rennid" type="text" value="Wird automatisch vergeben" readonly>
             </p>
             <p>
                 <label for="datum">Datum</label><br>
@@ -101,41 +118,41 @@ if (isset($_POST['anlegen'])) {
             </p>
             <p>
                 <label for="plz">PLZ</label><br>
-                <input id="plz" name="plz" maxlength="5" placeholder="Postleitzahl" required>
+                <input id="plz" name="plz" type="text" maxlength="5" placeholder="z. B. 70173" required>
             </p>
             <p>
                 <label for="ort">Ort</label><br>
-                <input id="ort" name="ort" placeholder="Ort des Rennens" required>
+                <input id="ort" name="ort" type="text" placeholder="z. B. Stuttgart" required>
             </p>
             <p>
                 <label for="kilometer">Kilometer</label><br>
-                <input type="number" id="kilometer" name="kilometer" placeholder="Zu fahrende Kilometer" step="0.1"
-                    min="0" required> Km
+                <input id="kilometer" name="kilometer" type="number" placeholder="z. B. 42.5" step="0.1" min="0.1"
+                    required> km
             </p>
             <p>
                 <label for="hoehenmeter">Höhenmeter</label><br>
-                <input type="number" id="hoehenmeter" name="hoehenmeter" placeholder="Zu fahrende Höhenmeter" step="1"
-                    min="0" required>
+                <input id="hoehenmeter" name="hoehenmeter" type="number" placeholder="z. B. 850" step="1" min="0"
+                    required>
             </p>
             <p>
                 <label for="maximale_steigung">Maximale Steigung (%)</label><br>
-                <input type="number" id="maximale_steigung" name="maximale_steigung"
-                    placeholder="Maximale Steigung in %" step="1" min="0" max="100" required> %
+                <input id="maximale_steigung" name="maximale_steigung" type="number" placeholder="z. B. 12" step="0.1"
+                    min="0" max="100" required> %
             </p>
             <p>
-                <label>Veranstalter</label><br>
-                <input value="<?php echo htmlentities($_SESSION['veranstalter_loginname']); ?>" readonly>
+                <label for="veranstalter">Veranstalter</label><br>
+                <input id="veranstalter" type="text"
+                    value="<?php echo htmlentities($_SESSION['veranstalter_loginname']); ?>" readonly>
+            </p>
+            <p>
+                <input type="submit" name="anlegen" value="Anlegen">
             </p>
 
-            <p><input type="submit" name="anlegen" value="Anlegen">
+            <p>
+                <a href="index.php">Zurück zur Startseite</a>
             </p>
-            <p><a href="index.php">Zurück zur Startseite</a></p>
         </fieldset>
     </form>
-
-    <?php echo $meldung; ?>
-
-
 </body>
 
 </html>

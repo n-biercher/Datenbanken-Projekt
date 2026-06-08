@@ -7,6 +7,7 @@ zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
 
 include_once('dbh.php');
 
+
 class Ergebniserfassung extends Dbh
 {
 
@@ -14,31 +15,64 @@ class Ergebniserfassung extends Dbh
     {
         $sql = "SELECT * 
             FROM Rennen 
-            WHERE Datum < CURDATE() 
-            AND VeranstalterLoginName = ? 
+            WHERE VeranstalterLoginName = ? 
             ORDER BY Datum DESC";
 
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([$veranstalter_loginname]);
         return $stmt->fetchAll();
     }
-    public function fahrerZuRennenHolen($renn_id)
+
+
+    public function fahrerZuRennenHolen($renn_id, $veranstalter_loginname)
     {
-        $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname, f.Nachname FROM Teilnahme t JOIN Fahrer f 
-            ON t.MitarbeiterId = f.`Mitarbeiter-ID` AND t.Teamname = f.Teamname WHERE t.RennId = ? ORDER BY t.Startnummer ASC";
+        $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname,f.Nachname
+            FROM Teilnahme t
+            JOIN Fahrer f
+                 ON t.MitarbeiterId = f.`Mitarbeiter-ID`
+                 AND t.Teamname = f.Teamname
+            JOIN Rennen r
+                 ON t.RennId = r.RennId
+            WHERE t.RennId = ?
+            AND r.VeranstalterLoginName = ?";
 
         $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$renn_id]);
+        $stmt->execute([$renn_id, $veranstalter_loginname]);
         return $stmt->fetchAll();
-
     }
 
-    public function ergebnisseSpeichern($renn_id, $mitarbeiter_id, $platzierung, $zeit)
+    public function ergebnisseSpeichern($renn_id, $fahrer_daten, $mitarbeiter_ids)
     {
-        $sql = "UPDATE Teilnahme SET Platzierung = ?, Zeit = ? WHERE RennId = ? AND MitarbeiterId = ?";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id]);
+        $verbindung = $this->connect();
+
+        try {
+            $verbindung->beginTransaction();
+
+            $sql = "UPDATE Teilnahme 
+                SET Platzierung = ?, Zeit = ? 
+                WHERE RennId = ? 
+                AND MitarbeiterId = ? 
+                AND Teamname = ?";
+
+            $stmt = $verbindung->prepare($sql);
+
+            foreach ($mitarbeiter_ids as $mitarbeiter_id) {
+                $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
+                $zeit = $_POST['zeit_' . $mitarbeiter_id];
+                $teamname = $fahrer_daten[$mitarbeiter_id];
+
+                $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id, $teamname]);
+            }
+
+            $verbindung->commit();
+            return true;
+
+        } catch (PDOException $e) {
+            $verbindung->rollBack();
+            return false;
+        }
     }
+
 }
 
 $erfassung_objekt = new Ergebniserfassung();
@@ -48,58 +82,85 @@ $renn_id = "";
 $tabelle_anzeigen = false;
 $vergebene_platzierungen = [];
 
+$fehlermeldung = "";
+$erfolgsmeldung = "";
+
 if (isset($_POST['rennen_auswaehlen'])) {
     if (!empty($_POST['rennid'])) {
         $renn_id = $_POST['rennid'];
         $tabelle_anzeigen = true;
     } else {
-        echo "Bitte wähle ein Rennen aus.";
+        $fehlermeldung = "Bitte wähle ein Rennen aus.";
     }
 }
 
 if ($tabelle_anzeigen) {
-    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
+    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id, $_SESSION['veranstalter_loginname']);
 }
+
 
 if (isset($_POST['ergebnisse_speichern'])) {
     $renn_id = $_POST['renn_id'];
-    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id);
+    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id, $_SESSION['veranstalter_loginname']);
 
-    $max_platzierung = count($fahrer_liste);
     $fehler = false;
 
+    if (empty($fahrer_liste)) {
+        $fehlermeldung = "Ungültiges Rennen oder keine Fahrer vorhanden.";
+        $fehler = true;
+    }
+
+    $fahrer_daten = [];
+
+    foreach ($fahrer_liste as $fahrer) {
+        $fahrer_daten[$fahrer['MitarbeiterId']] = $fahrer['Teamname'];
+    }
+
+    $max_platzierung = count($fahrer_liste);
+
     foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+
+
+        if (!isset($fahrer_daten[$mitarbeiter_id])) {
+            $fehlermeldung = "Ungültiger Fahrer übermittelt.";
+            $fehler = true;
+            break;
+        }
         $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
         $zeit = $_POST['zeit_' . $mitarbeiter_id];
+        $teamname = $fahrer_daten[$mitarbeiter_id];
 
         if (empty($platzierung) || empty($zeit)) {
-            echo "Bitte fülle alle Platzierungen und Zeiten aus.";
+            $fehlermeldung = "Bitte fülle alle Platzierungen und Zeiten aus.";
             $fehler = true;
             break;
         }
 
         if ($platzierung < 1 || $platzierung > $max_platzierung) {
-            echo "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
+            $fehlermeldung = "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
             $fehler = true;
             break;
         }
         if (in_array($platzierung, $vergebene_platzierungen)) {
-            echo "Jede Platzierung darf nur einmal vergeben werden.";
+            $fehlermeldung = "Jede Platzierung darf nur einmal vergeben werden.";
             $fehler = true;
             break;
         }
 
         $vergebene_platzierungen[] = $platzierung;
     }
-
     if (!$fehler) {
-        foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-            $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
-            $zeit = $_POST['zeit_' . $mitarbeiter_id];
+        $gespeichert = $erfassung_objekt->ergebnisseSpeichern(
+            $renn_id,
+            $fahrer_daten,
+            $_POST['mitarbeiter_ids']
+        );
 
-            $erfassung_objekt->ergebnisseSpeichern($renn_id, $mitarbeiter_id, $platzierung, $zeit);
+        if ($gespeichert) {
+            $erfolgsmeldung = "Ergebnisse wurden erfolgreich gespeichert!";
+        } else {
+            $fehlermeldung = "Fehler beim Speichern der Ergebnisse.";
         }
-        echo "Ergebnisse wurden erfolgreich gespeichert!";
     }
 
 
@@ -120,6 +181,19 @@ if (isset($_POST['ergebnisse_speichern'])) {
     <h1>Rennen Ergebniserfassung</h1>
 
     <p><a href="logout.php">Logout</a></p>
+
+    <?php if (!empty($fehlermeldung)): ?>
+        <p>
+            <?php echo htmlentities($fehlermeldung); ?>
+        </p>
+    <?php endif; ?>
+
+    <?php if (!empty($erfolgsmeldung)): ?>
+        <p>
+            <?php echo htmlentities($erfolgsmeldung); ?>
+        </p>
+    <?php endif; ?>
+
 
     <form action="" method="POST">
         <fieldset>
