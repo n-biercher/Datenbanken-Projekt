@@ -5,6 +5,8 @@ session_start();
 
 include_once 'dbh.php';
 
+$fehlermeldung = "";
+
 class Veranstalter extends Dbh
 {
 
@@ -33,14 +35,12 @@ class Veranstalter extends Dbh
     public function veranstalterRegistrieren($loginname, $passwort, $passwort2)
     {
         if ($passwort !== $passwort2) {
-            echo "Kennwörter stimmen nicht überein";
-            return;
+            return "Kennwörter stimmen nicht überein";
         }
 
         $check = $this->überprüfePasswort($passwort);
         if ($check !== true) {
-            echo $check;
-            return;
+            return $check;
         }
 
         // Prüfen ob Loginname existiert
@@ -49,8 +49,7 @@ class Veranstalter extends Dbh
         $stmt->execute([$loginname]);
 
         if ($stmt->fetch()) {
-            echo "Loginname bereits vergeben!";
-            return;
+            return "Loginname bereits vergeben!";
         }
 
         // Passwort hashen
@@ -75,8 +74,7 @@ class Veranstalter extends Dbh
         $user = $stmt->fetch();
 
         if (!$user) {
-            echo "Bitte registriere dich zuerst!";
-            return;
+            return "Bitte registriere dich zuerst!";
         }
 
         // Passwort prüfen 
@@ -85,7 +83,7 @@ class Veranstalter extends Dbh
             header("Location: veranstalter_startseite.php");
             exit();
         } else {
-            echo "<p>Falsches Kennwort!</p>";
+            return "Falsches Kennwort!";
         }
     }
 }
@@ -97,12 +95,16 @@ if (isset($_POST['registrieren'])) {
     $passwort_bestaetigen = $_POST['veranstalter_kennwort_bestaetigung'];
 
     if (empty($loginname) || empty($passwort) || empty($passwort_bestaetigen)) {
-        echo "Bitte alle Felder ausfüllen!";
+        $fehlermeldung = "Bitte alle Felder ausfüllen!";
     } elseif (strlen($loginname) > 50) {
-        echo "Loginname darf maximal 50 Zeichen lang sein!";
+        $fehlermeldung = "Loginname darf maximal 50 Zeichen lang sein!";
     } else {
         $veranstalter_objekt = new Veranstalter();
-        $veranstalter_objekt->veranstalterRegistrieren($loginname, $passwort, $passwort_bestaetigen);
+        $ergebnis = $veranstalter_objekt->veranstalterRegistrieren($loginname, $passwort, $passwort_bestaetigen);
+
+        if ($ergebnis !== true) {
+            $fehlermeldung = $ergebnis;
+        }
     }
 }
 
@@ -112,10 +114,14 @@ if (isset($_POST['login'])) {
     $passwort = $_POST['veranstalter_kennwort'];
 
     if (empty($loginname) || empty($passwort)) {
-        echo "Bitte Loginname und Kennwort eingeben!";
+        $fehlermeldung = "Bitte Loginname und Kennwort eingeben!";
     } else {
         $veranstalter_objekt = new Veranstalter();
-        $veranstalter_objekt->veranstalterAnmelden($loginname, $passwort);
+        $ergebnis = $veranstalter_objekt->veranstalterAnmelden($loginname, $passwort);
+
+        if ($ergebnis !== true) {
+            $fehlermeldung = $ergebnis;
+        }
     }
 }
 ?>
@@ -131,23 +137,34 @@ if (isset($_POST['login'])) {
 <body>
 
     <h1>Veranstalter einloggen</h1>
+    
+    <?php if (!empty($fehlermeldung)): ?>
+        <p>
+            <?php echo $fehlermeldung; ?>
+        </p>
+    <?php endif; ?>
+
+
     <form action="" method="POST">
         <fieldset>
             <legend>Login-Daten unten eintragen</legend>
 
             <p>
                 <label for="veranstalter_loginname">Loginname</label><br>
-                <input id="veranstalter_loginname" name="veranstalter_loginname" required>
+                <input id="veranstalter_loginname" name="veranstalter_loginname" type="text" maxlength="50"
+                    placeholder="Loginname eingeben" required>
             </p>
 
             <p>
                 <label for="veranstalter_kennwort">Kennwort</label><br>
-                <input id="veranstalter_kennwort" name="veranstalter_kennwort" type="password" required>
+                <input id="veranstalter_kennwort" name="veranstalter_kennwort" type="password"
+                    placeholder="Kennwort eingeben" required>
             </p>
 
             <p>
                 <label for="veranstalter_kennwort_bestaetigung">Kennwort bestätigen</label><br>
-                <input id="veranstalter_kennwort_bestaetigung" name="veranstalter_kennwort_bestaetigung" type="password">
+                <input id="veranstalter_kennwort_bestaetigung" name="veranstalter_kennwort_bestaetigung" type="password"
+                    placeholder="Kennwort bestätigen">
             </p>
 
             <p>
@@ -160,6 +177,7 @@ if (isset($_POST['login'])) {
     </form>
 
 </body>
+
 </html>
 
 <!-- Lena Strohmenger Ende -->
