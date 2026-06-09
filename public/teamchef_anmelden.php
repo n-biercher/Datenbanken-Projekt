@@ -1,7 +1,27 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
 include_once('include/session_management.php');
+include_once('classes/TeamchefLogin.php');
 sitzungStarten();
+
+if (isset($_SESSION['teamchef_loginname'])) {
+    header("Location: index.php");
+    exit();
+}
+
+$fehler = '';
+
+if (isset($_POST['login'])) {
+    if (!csrfTokenGueltig()) {
+        $fehler = "Ungültige Anfrage. Bitte die Seite neu laden.";
+    } else {
+        $login  = new TeamchefLogin();
+        $fehler = $login->login(
+            trim($_POST['loginname'] ?? ''),
+            $_POST['kennwort'] ?? ''
+        ) ?? '';
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -16,18 +36,23 @@ sitzungStarten();
 
 <h1>Login</h1>
 
+<?php if ($fehler !== ''): ?>
+    <p><?php echo htmlspecialchars($fehler); ?></p>
+<?php endif; ?>
+
 <form action="" method="POST">
+    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
     <fieldset>
         <legend>Login</legend>
 
         <p>
-            <label>Loginname</label><br>
-            <input name="loginname" required>
+            <label for="loginname">Loginname</label><br>
+            <input id="loginname" name="loginname" required>
         </p>
 
         <p>
-            <label>Kennwort</label><br>
-            <input name="kennwort" type="password" required>
+            <label for="kennwort">Kennwort</label><br>
+            <input id="kennwort" name="kennwort" type="password" required>
         </p>
 
         <p>
@@ -39,47 +64,6 @@ sitzungStarten();
         </p>
     </fieldset>
 </form>
-
-<?php
-
-include_once ('include/dbh.php');
-
-class TeamchefLogin extends Dbh
-{
-    public function login($loginname, $kennwort)
-    {
-        $anmelde_abfrage = $this->connect()->prepare(
-            "SELECT * FROM Teamchef WHERE TeamchefLoginName = ?"
-        );
-        $anmelde_abfrage->execute([$loginname]);
-        $user = $anmelde_abfrage->fetch();
-
-        if (!$user) {
-            echo "User nicht gefunden";
-            return;
-        }
-
-        if (password_verify($kennwort, $user['Kennwort'])) {
-
-            $_SESSION['teamchef_loginname'] = $user['TeamchefLoginName'];
-            $_SESSION['vorname'] = $user['Vorname'];
-            $_SESSION['nachname'] = $user['Nachname'];
-
-            header("Location: index.php");
-            exit();
-
-        } else {
-            echo "Falsches Passwort";
-        }
-    }
-}
-
-if (isset($_POST['login'])) {
-    $login = new TeamchefLogin();
-    $login->login($_POST['loginname'], $_POST['kennwort']);
-}
-?>
-
 </body>
 </html>
 <!-- Nicolas Biercher Ende -->

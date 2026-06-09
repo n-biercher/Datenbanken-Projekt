@@ -12,12 +12,12 @@ include_once('include/dbh.php');
 class TeamVerwaltung extends Dbh {
     function sicherenWertAuslesen(array $datensatz, string $schluessel): string {
         return isset($datensatz[$schluessel]) ? htmlspecialchars($datensatz[$schluessel]) : '';
-    } 
-    
+    }
+
     function postWertLesen(string $feldname): string {
         return isset($_POST[$feldname]) ? trim($_POST[$feldname]) : '';
     }
-    
+
     function fahrerDatenValidieren(array $daten): array {
         $fehlerliste = [];
 
@@ -51,7 +51,7 @@ class TeamVerwaltung extends Dbh {
 
         return $fehlerliste;
     }
-    
+
     public function teamNachLoginnamenLaden(string $loginname): array|false {
         $db = $this->connect();
 
@@ -69,7 +69,7 @@ class TeamVerwaltung extends Dbh {
         $db = $this->connect();
 
         $abfrage = $db->prepare("
-            SELECT *
+            SELECT `Mitarbeiter-ID`, Vorname, Nachname, `Straße`, Hausnummer, Telefonnummer, PLZ, Ort, Teamname
             FROM Fahrer
             WHERE Teamname = ?
             ORDER BY `Mitarbeiter-ID` ASC
@@ -83,7 +83,7 @@ class TeamVerwaltung extends Dbh {
         $db = $this->connect();
 
         $abfrage = $db->prepare("
-            SELECT *
+            SELECT `Mitarbeiter-ID`, Vorname, Nachname, `Straße`, Hausnummer, Telefonnummer, PLZ, Ort, Teamname
             FROM Fahrer
             WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
         ");
@@ -142,68 +142,46 @@ class TeamVerwaltung extends Dbh {
         string $plz,
         string $ort,
         string $teamname): string {
-        $db = $this->connect();
+        $abfrage = $this->connect()->prepare("
+            UPDATE Fahrer
+            SET
+                Vorname       = ?,
+                Nachname      = ?,
+                `Straße`      = ?,
+                Hausnummer    = ?,
+                Telefonnummer = ?,
+                PLZ           = ?,
+                Ort           = ?
+            WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
+        ");
 
-        $db->beginTransaction();
+        $abfrage->execute([
+            $vorname,
+            $nachname,
+            $strasse,
+            $hausnummer,
+            $telefonnummer,
+            $plz,
+            $ort,
+            $mitarbeiter_id,
+            $teamname
+        ]);
 
-        try {
-            $abfrage = $db->prepare("
-                UPDATE Fahrer
-                SET
-                    Vorname       = ?,
-                    Nachname      = ?,
-                    `Straße`      = ?,
-                    Hausnummer    = ?,
-                    Telefonnummer = ?,
-                    PLZ           = ?,
-                    Ort           = ?
-                WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
-            ");
-
-            $abfrage->execute([
-                $vorname,
-                $nachname,
-                $strasse,
-                $hausnummer,
-                $telefonnummer,
-                $plz,
-                $ort,
-                $mitarbeiter_id,
-                $teamname
-            ]);
-
-            $db->commit();
-
-            return "Fahrer wurde erfolgreich geändert.";
-        } catch (PDOException $e) {
-            $db->rollBack();
-            throw $e;
-        }
+        return "Fahrer wurde erfolgreich geändert.";
     }
 
     public function fahrerAusTeamEntfernen(int $mitarbeiter_id, string $teamname): string {
-        $db = $this->connect();
+        $abfrage = $this->connect()->prepare("
+            DELETE FROM Fahrer
+            WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
+        ");
+        $abfrage->execute([$mitarbeiter_id, $teamname]);
 
-        $db->beginTransaction();
-
-        try {
-            $abfrage = $db->prepare("
-                DELETE FROM Fahrer
-                WHERE `Mitarbeiter-ID` = ? AND Teamname = ?
-            ");
-            $abfrage->execute([$mitarbeiter_id, $teamname]);
-
-            $db->commit();
-
-            if ($abfrage->rowCount() > 0) {
-                return "Fahrer wurde erfolgreich gelöscht.";
-            }
-
-            return "Fahrer wurde nicht gefunden.";
-        } catch (PDOException $e) {
-            $db->rollBack();
-            throw $e;
+        if ($abfrage->rowCount() > 0) {
+            return "Fahrer wurde erfolgreich gelöscht.";
         }
+
+        return "Fahrer wurde nicht gefunden.";
     }
 }
 

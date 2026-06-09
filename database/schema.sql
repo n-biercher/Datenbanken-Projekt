@@ -162,3 +162,104 @@ ENGINE = InnoDB;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+-- -----------------------------------------------------
+-- Stored Procedure `gruppe5`.`fahrer_anlegen`
+-- Nicolas Biercher
+-- Legt einen neuen Fahrer mit teamspezifisch vergeben Mitarbeiter-ID an.
+-- Gibt erfolg (1/0) und meldung als Ergebniszeile zurück.
+-- -----------------------------------------------------
+DROP PROCEDURE IF EXISTS `gruppe5`.`fahrer_anlegen`;
+
+DELIMITER //
+
+CREATE PROCEDURE `gruppe5`.`fahrer_anlegen`(
+    IN p_vorname      VARCHAR(45),
+    IN p_nachname     VARCHAR(45),
+    IN p_strasse      VARCHAR(45),
+    IN p_hausnummer   VARCHAR(45),
+    IN p_telefonnummer VARCHAR(45),
+    IN p_plz          VARCHAR(5),
+    IN p_ort          VARCHAR(45),
+    IN p_teamname     VARCHAR(50)
+)
+BEGIN
+    DECLARE v_erfolg INT DEFAULT 1;
+    DECLARE v_meldung VARCHAR(255) DEFAULT '';
+    DECLARE v_anzahl INT DEFAULT 0;
+    DECLARE v_neue_mitarbeiter_id INT DEFAULT 1;
+
+    IF p_teamname IS NULL OR TRIM(p_teamname) = '' THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Teamname darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_vorname IS NULL OR TRIM(p_vorname) = '') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Vorname darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_nachname IS NULL OR TRIM(p_nachname) = '') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Nachname darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_strasse IS NULL OR TRIM(p_strasse) = '') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Straße darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_hausnummer IS NULL OR TRIM(p_hausnummer) = '') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Hausnummer darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_telefonnummer IS NULL OR TRIM(p_telefonnummer) = '') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Telefonnummer darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_plz IS NULL OR p_plz NOT REGEXP '^[0-9]{5}$') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'PLZ muss genau 5 Ziffern haben';
+    END IF;
+
+    IF v_erfolg = 1 AND (p_ort IS NULL OR TRIM(p_ort) = '') THEN
+        SET v_erfolg = 0;
+        SET v_meldung = 'Ort darf nicht leer sein';
+    END IF;
+
+    IF v_erfolg = 1 THEN
+        SELECT COUNT(*) INTO v_anzahl
+        FROM Team
+        WHERE Teamname = p_teamname;
+
+        IF v_anzahl = 0 THEN
+            SET v_erfolg = 0;
+            SET v_meldung = 'Team existiert nicht';
+        END IF;
+    END IF;
+
+    IF v_erfolg = 1 THEN
+        SELECT COALESCE(MAX(`Mitarbeiter-ID`), 0) + 1
+        INTO v_neue_mitarbeiter_id
+        FROM Fahrer
+        WHERE Teamname = p_teamname
+        FOR UPDATE;
+    END IF;
+
+    IF v_erfolg = 1 THEN
+        INSERT INTO Fahrer
+        (`Mitarbeiter-ID`, Vorname, Nachname, `Straße`, Hausnummer, Telefonnummer, PLZ, Ort, Teamname)
+        VALUES
+        (v_neue_mitarbeiter_id, p_vorname, p_nachname, p_strasse, p_hausnummer, p_telefonnummer, p_plz, p_ort, p_teamname);
+
+        SET v_meldung = CONCAT('Fahrer erfolgreich angelegt mit ID ', v_neue_mitarbeiter_id);
+    END IF;
+
+    SELECT v_erfolg AS erfolg, v_meldung AS meldung;
+
+END //
+
+DELIMITER ;

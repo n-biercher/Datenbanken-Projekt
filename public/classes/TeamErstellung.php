@@ -9,10 +9,8 @@ if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
 
 include_once('include/dbh.php');
 
-class TeamRegistrierung extends Dbh
-{
-    private function istKennwortSicher(string $kennwort): true|string
-    {
+class TeamRegistrierung extends Dbh {
+    private function istKennwortSicher(string $kennwort): true|string {
         if (strlen($kennwort) < 8) {
             return "Das Kennwort muss mindestens 8 Zeichen lang sein";
         }
@@ -32,12 +30,13 @@ class TeamRegistrierung extends Dbh
     }
 
     public function registrieren(
-        string $teamname,
-        string $vorname,
-        string $nachname,
-        string $loginname,
-        string $kennwort,
-        string $kennwort_bestaetigung): ?string {
+    string $teamname,
+    string $vorname,
+    string $nachname,
+    string $loginname,
+    string $kennwort,
+    string $kennwort_bestaetigung): ?string {
+
         if ($kennwort !== $kennwort_bestaetigung) {
             return "Kennwörter stimmen nicht überein";
         }
@@ -49,22 +48,22 @@ class TeamRegistrierung extends Dbh
 
         $db = $this->connect();
 
+        $stmt = $db->prepare("SELECT TeamchefLoginName FROM Teamchef WHERE TeamchefLoginName = ?");
+        $stmt->execute([$loginname]);
+        if ($stmt->fetch()) {
+            return "Loginname existiert bereits";
+        }
+
+        $stmt = $db->prepare("SELECT Teamname FROM Team WHERE Teamname = ?");
+        $stmt->execute([$teamname]);
+        if ($stmt->fetch()) {
+            return "Teamname existiert bereits";
+        }
+
+        $hash = password_hash($kennwort, PASSWORD_DEFAULT);
+
         try {
             $db->beginTransaction();
-
-            $stmt = $db->prepare("SELECT * FROM Teamchef WHERE TeamchefLoginName = ?");
-            $stmt->execute([$loginname]);
-            if ($stmt->fetch()) {
-                return "Loginname existiert bereits";
-            }
-
-            $stmt = $db->prepare("SELECT * FROM Team WHERE Teamname = ?");
-            $stmt->execute([$teamname]);
-            if ($stmt->fetch()) {
-                return "Teamname existiert bereits";
-            }
-
-            $hash = password_hash($kennwort, PASSWORD_DEFAULT);
 
             $db->prepare("INSERT INTO Teamchef (TeamchefLoginName, Kennwort, Vorname, Nachname) VALUES (?, ?, ?, ?)")
                ->execute([$loginname, $hash, $vorname, $nachname]);

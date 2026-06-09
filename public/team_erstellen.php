@@ -8,28 +8,32 @@ $meldung = '';
 $fehler  = '';
 
 if (isset($_POST['registrieren'])) {
-    $teamname      = trim($_POST['teamname']             ?? '');
-    $vorname       = trim($_POST['vorname']              ?? '');
-    $nachname      = trim($_POST['nachname']             ?? '');
-    $loginname     = trim($_POST['loginname']            ?? '');
-    $kennwort      = $_POST['kennwort']                  ?? '';
-    $kennwort_best = $_POST['kennwort_bestaetigung']     ?? '';
-
-    if (empty($teamname) || empty($vorname) || empty($nachname) || empty($loginname) || empty($kennwort) || empty($kennwort_best)) {
-        $fehler = "Bitte alle Felder ausfüllen!";
-    } elseif (strlen($loginname) > 50) {
-        $fehler = "Loginname darf maximal 50 Zeichen lang sein!";
+    if (!csrfTokenGueltig()) {
+        $fehler = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
-        try {
-            $reg    = new TeamRegistrierung();
-            $fehler = $reg->registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_best);
+        $teamname      = trim($_POST['teamname']         ?? '');
+        $vorname       = trim($_POST['vorname']          ?? '');
+        $nachname      = trim($_POST['nachname']         ?? '');
+        $loginname     = trim($_POST['loginname']        ?? '');
+        $kennwort      = $_POST['kennwort']              ?? '';
+        $kennwort_best = $_POST['kennwort_bestaetigung'] ?? '';
 
-            if ($fehler === null) {
-                $meldung = "Registrierung erfolgreich!";
-                $fehler  = '';
+        if (empty($teamname) || empty($vorname) || empty($nachname) || empty($loginname) || empty($kennwort) || empty($kennwort_best)) {
+            $fehler = "Bitte alle Felder ausfüllen!";
+        } elseif (strlen($loginname) > 50) {
+            $fehler = "Loginname darf maximal 50 Zeichen lang sein!";
+        } else {
+            try {
+                $reg    = new TeamRegistrierung();
+                $fehler = $reg->registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_best);
+
+                if ($fehler === null) {
+                    $meldung = "Registrierung erfolgreich!";
+                    $fehler  = '';
+                }
+            } catch (PDOException $e) {
+                $fehler = "Fehler bei der Registrierung.";
             }
-        } catch (PDOException $e) {
-            $fehler = "Fehler bei der Registrierung.";
         }
     }
 }
@@ -54,37 +58,38 @@ if (isset($_POST['registrieren'])) {
 <?php endif; ?>
 
 <form action="" method="POST">
+    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
     <fieldset>
         <legend>Bitte Team-Daten eingeben</legend>
 
         <p>
-            <label>Teamname</label><br>
-            <input name="teamname" required>
+            <label for="teamname">Teamname</label><br>
+            <input id="teamname" name="teamname" required>
         </p>
 
         <p>
-            <label>Vorname</label><br>
-            <input name="vorname" required>
+            <label for="vorname">Vorname</label><br>
+            <input id="vorname" name="vorname" required>
         </p>
 
         <p>
-            <label>Nachname</label><br>
-            <input name="nachname" required>
+            <label for="nachname">Nachname</label><br>
+            <input id="nachname" name="nachname" required>
         </p>
 
         <p>
-            <label>Loginname</label><br>
-            <input name="loginname" required>
+            <label for="loginname">Loginname</label><br>
+            <input id="loginname" name="loginname" required>
         </p>
 
         <p>
-            <label>Kennwort</label><br>
-            <input name="kennwort" type="password" required>
+            <label for="kennwort">Kennwort</label><br>
+            <input id="kennwort" name="kennwort" type="password" required>
         </p>
 
         <p>
-            <label>Kennwort bestätigen</label><br>
-            <input name="kennwort_bestaetigung" type="password" required>
+            <label for="kennwort_bestaetigung">Kennwort bestätigen</label><br>
+            <input id="kennwort_bestaetigung" name="kennwort_bestaetigung" type="password" required>
         </p>
 
         <p>

@@ -15,30 +15,33 @@ $meldung           = "";
 $fehler            = "";
 $bearbeitungsmodus = false;
 
-$formulardaten = [
-    'mitarbeiter_id' => '',
-    'vorname'        => '',
-    'nachname'       => '',
-    'strasse'        => '',
-    'hausnummer'     => '',
-    'telefonnummer'  => '',
-    'plz'            => '',
-    'ort'            => ''
-];
+function leereFormulardaten(): array {
+    return [
+        'mitarbeiter_id' => '',
+        'vorname'        => '',
+        'nachname'       => '',
+        'strasse'        => '',
+        'hausnummer'     => '',
+        'telefonnummer'  => '',
+        'plz'            => '',
+        'ort'            => ''
+    ];
+}
+
+$formulardaten = leereFormulardaten();
 
 try {
     $team = $verwaltung->teamNachLoginnamenLaden($teamchef_loginname);
-
-    if (!$team) {
-        echo "Kein Team gefunden.";
-        exit();
-    }
-
-    $teamname = $team['Teamname'];
 } catch (PDOException $e) {
-    echo "Fehler beim Laden des Teams.";
+    $team = false;
+}
+
+if (!$team) {
+    header("Location: index.php?fehler=kein_team");
     exit();
 }
+
+$teamname = $team['Teamname'];
 
 if (isset($_GET['bearbeiten'])) {
     $mitarbeiter_id = filter_input(INPUT_GET, 'bearbeiten', FILTER_VALIDATE_INT);
@@ -121,16 +124,7 @@ if (isset($_POST['fahrer_speichern'])) {
                     if ($ergebnis && isset($ergebnis['erfolg']) && $ergebnis['erfolg'] == 1) {
                         $meldung = $ergebnis['meldung'];
 
-                        $formulardaten = [
-                            'mitarbeiter_id' => '',
-                            'vorname'        => '',
-                            'nachname'       => '',
-                            'strasse'        => '',
-                            'hausnummer'     => '',
-                            'telefonnummer'  => '',
-                            'plz'            => '',
-                            'ort'            => ''
-                        ];
+                        $formulardaten = leereFormulardaten();
                     } elseif ($ergebnis && isset($ergebnis['meldung'])) {
                         $fehler = $ergebnis['meldung'];
                     } else {
@@ -207,38 +201,38 @@ try {
             <?php endif; ?>
 
             <p>
-                <label>Vorname</label><br>
-                <input name="vorname" value="<?php echo htmlspecialchars($formulardaten['vorname']); ?>" required>
+                <label for="vorname">Vorname</label><br>
+                <input id="vorname" name="vorname" value="<?php echo htmlspecialchars($formulardaten['vorname']); ?>" required>
             </p>
 
             <p>
-                <label>Nachname</label><br>
-                <input name="nachname" value="<?php echo htmlspecialchars($formulardaten['nachname']); ?>" required>
+                <label for="nachname">Nachname</label><br>
+                <input id="nachname" name="nachname" value="<?php echo htmlspecialchars($formulardaten['nachname']); ?>" required>
             </p>
 
             <p>
-                <label>Straße</label><br>
-                <input name="strasse" value="<?php echo htmlspecialchars($formulardaten['strasse']); ?>" required>
+                <label for="strasse">Straße</label><br>
+                <input id="strasse" name="strasse" value="<?php echo htmlspecialchars($formulardaten['strasse']); ?>" required>
             </p>
 
             <p>
-                <label>Hausnummer</label><br>
-                <input name="hausnummer" value="<?php echo htmlspecialchars($formulardaten['hausnummer']); ?>" required>
+                <label for="hausnummer">Hausnummer</label><br>
+                <input id="hausnummer" name="hausnummer" value="<?php echo htmlspecialchars($formulardaten['hausnummer']); ?>" required>
             </p>
 
             <p>
-                <label>Telefonnummer</label><br>
-                <input name="telefonnummer" value="<?php echo htmlspecialchars($formulardaten['telefonnummer']); ?>" required>
+                <label for="telefonnummer">Telefonnummer</label><br>
+                <input id="telefonnummer" name="telefonnummer" value="<?php echo htmlspecialchars($formulardaten['telefonnummer']); ?>" required>
             </p>
 
             <p>
-                <label>PLZ</label><br>
-                <input name="plz" maxlength="5" value="<?php echo htmlspecialchars($formulardaten['plz']); ?>" required>
+                <label for="plz">PLZ</label><br>
+                <input id="plz" name="plz" maxlength="5" value="<?php echo htmlspecialchars($formulardaten['plz']); ?>" required>
             </p>
 
             <p>
-                <label>Ort</label><br>
-                <input name="ort" value="<?php echo htmlspecialchars($formulardaten['ort']); ?>" required>
+                <label for="ort">Ort</label><br>
+                <input id="ort" name="ort" value="<?php echo htmlspecialchars($formulardaten['ort']); ?>" required>
             </p>
 
             <p>

@@ -12,6 +12,8 @@ if (isset($_GET['fehler'])) {
         $fehler = 'Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.';
     } elseif ($_GET['fehler'] === 'kein_zugriff') {
         $fehler = 'Kein Zugriff. Bitte melde dich zuerst an.';
+    } elseif ($_GET['fehler'] === 'kein_team') {
+        $fehler = 'Deinem Account ist kein Team zugeordnet.';
     }
 }
 ?>
