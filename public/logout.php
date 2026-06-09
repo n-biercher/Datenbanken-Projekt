@@ -1,6 +1,8 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
+ob_start();
 include_once('session_management.php');
+session_start();
 sitzungBeenden();
 
 header("Location: index.php");
