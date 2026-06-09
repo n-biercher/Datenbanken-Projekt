@@ -107,7 +107,7 @@ class TeamVerwaltung extends Dbh {
 
         try {
             $abfrage = $db->prepare("
-                CALL FahrerAnlegen(?, ?, ?, ?, ?, ?, ?, ?)
+                CALL fahrer_anlegen(?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $abfrage->execute([
                 $vorname,
