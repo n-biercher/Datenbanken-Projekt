@@ -8,7 +8,7 @@ class Dbh {
     private $dbName = "gruppe5";
     protected function connect() {
         try {   
-            $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbName;
+            $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbName . ';charset=utf8mb4';
             $pdo = new PDO($dsn, $this->user, $this->password);
             $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             return $pdo;
