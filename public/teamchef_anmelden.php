@@ -1,6 +1,6 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
-include_once('session_management.php');
+include_once('include/session_management.php');
 sitzungStarten();
 ?>
 
@@ -42,7 +42,7 @@ sitzungStarten();
 
 <?php
 
-include_once 'dbh.php';
+include_once ('include/dbh.php');
 
 class TeamchefLogin extends Dbh
 {

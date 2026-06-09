@@ -1,35 +1,16 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('session_management.php');
+include_once('include/session_management.php');
 sitzungStarten();
 zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
 
-include_once 'dbh.php';
+include_once('classes/Rennen.php');
 
 $fehlermeldung = "";
 $erfolgsmeldung = "";
 
-class Rennen extends Dbh
-{
 
-    //Neues Rennen anlegen
-    public function rennenAnlegen($datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter)
-    {
-        try {
-            $sql = "INSERT INTO Rennen (Datum, PLZ, Ort, Kilometer, Steigung, Hoehenmeter, VeranstalterLoginName) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-            $stmt = $this->connect()->prepare($sql);
-            $stmt->execute([$datum, $plz, $ort, $kilometer, $steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']]);
-
-            return true;
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
-}
 
 // Formularverarbeitung
 if (isset($_POST['anlegen'])) {
@@ -57,7 +38,7 @@ if (isset($_POST['anlegen'])) {
 
     } else {
         $rennen_anlegen = new Rennen();
-        $gespeichert = $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter);
+        $gespeichert = $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']);
 
         if ($gespeichert) {
             $erfolgsmeldung = "Rennen erfolgreich angelegt!";

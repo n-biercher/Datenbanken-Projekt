@@ -1,6 +1,6 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
-include_once('session_management.php');
+include_once('include/session_management.php');
 sitzungStarten();
 
 $fehler = '';

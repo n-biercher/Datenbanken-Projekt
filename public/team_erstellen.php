@@ -1,8 +1,8 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
-include_once('session_management.php');
+include_once('include/session_management.php');
 sitzungStarten();
-include_once('TeamErstellung.php');
+include_once('classes/TeamErstellung.php');
 
 $meldung = '';
 $fehler  = '';

@@ -1,0 +1,77 @@
+<!-- Lena Strohmenger Beginn -->
+
+<?php
+
+include_once('include/dbh.php');
+
+
+class Ergebniserfassung extends Dbh
+{
+
+    public function vergangeneRennenHolen($veranstalter_loginname)
+    {
+        $sql = "SELECT * 
+            FROM Rennen 
+            WHERE VeranstalterLoginName = ? 
+            ORDER BY Datum DESC";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$veranstalter_loginname]);
+        return $stmt->fetchAll();
+    }
+
+
+    public function fahrerZuRennenHolen($renn_id, $veranstalter_loginname)
+    {
+        $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname,f.Nachname
+            FROM Teilnahme t
+            JOIN Fahrer f
+                 ON t.MitarbeiterId = f.`Mitarbeiter-ID`
+                 AND t.Teamname = f.Teamname
+            JOIN Rennen r
+                 ON t.RennId = r.RennId
+            WHERE t.RennId = ?
+            AND r.VeranstalterLoginName = ?";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$renn_id, $veranstalter_loginname]);
+        return $stmt->fetchAll();
+    }
+    public function ergebnisseSpeichern($renn_id, $ergebnisse)
+    {
+        $verbindung = $this->connect();
+
+        try {
+            $verbindung->beginTransaction();
+
+            $sql = "UPDATE Teilnahme 
+                SET Platzierung = ?, Zeit = ? 
+                WHERE RennId = ? 
+                AND MitarbeiterId = ? 
+                AND Teamname = ?";
+
+            $stmt = $verbindung->prepare($sql);
+
+            foreach ($ergebnisse as $mitarbeiter_id => $daten) {
+                $stmt->execute([
+                    $daten['platzierung'],
+                    $daten['zeit'],
+                    $renn_id,
+                    $mitarbeiter_id,
+                    $daten['teamname']
+                ]);
+            }
+
+            $verbindung->commit();
+            return true;
+
+        } catch (PDOException $e) {
+            $verbindung->rollBack();
+            return false;
+        }
+    }
+
+}
+?>
+
+<!-- Lena Strohmenger Ende -->

@@ -1,93 +1,12 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('session_management.php');
+include_once('include/session_management.php');
 sitzungStarten();
 
-include_once 'dbh.php';
+include_once('classes/Veranstalter.php');
 
 $fehlermeldung = "";
-
-class Veranstalter extends Dbh
-{
-
-    // Passwortstärke überprüfen
-    private function überprüfePasswort($passwort)
-    {
-        if (strlen($passwort) < 8) {
-            return "Mindestens 8 Zeichen";
-        }
-        if (!preg_match('/[A-Z]/', $passwort)) {
-            return "Mindestens 1 Großbuchstabe";
-        }
-        if (!preg_match('/[a-z]/', $passwort)) {
-            return "Mindestens 1 Kleinbuchstabe";
-        }
-        if (!preg_match('/[0-9]/', $passwort)) {
-            return "Mindestens 1 Zahl";
-        }
-        if (!preg_match('/[\W_]/', $passwort)) {
-            return "Mindestens 1 Sonderzeichen";
-        }
-        return true;
-    }
-
-    // Veranstalter registrieren
-    public function veranstalterRegistrieren($loginname, $passwort, $passwort2)
-    {
-        if ($passwort !== $passwort2) {
-            return "Kennwörter stimmen nicht überein";
-        }
-
-        $check = $this->überprüfePasswort($passwort);
-        if ($check !== true) {
-            return $check;
-        }
-
-        // Prüfen ob Loginname existiert
-        $sql = "SELECT VeranstalterLoginName FROM Veranstalter WHERE VeranstalterLoginName = ?";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$loginname]);
-
-        if ($stmt->fetch()) {
-            return "Loginname bereits vergeben!";
-        }
-
-        // Passwort hashen
-        $hash = password_hash($passwort, PASSWORD_DEFAULT);
-
-        // Einfügen
-        $sql = "INSERT INTO Veranstalter (VeranstalterLoginName, Kennwort) VALUES (?, ?)";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$loginname, $hash]);
-
-        $_SESSION['veranstalter_loginname'] = $loginname;
-        header("Location: veranstalter_startseite.php");
-        exit();
-    }
-
-    //Veranstalter anmelden
-    public function veranstalterAnmelden($loginname, $passwort)
-    {
-        $sql = "SELECT * FROM Veranstalter WHERE VeranstalterLoginName = ?";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$loginname]);
-        $user = $stmt->fetch();
-
-        if (!$user) {
-            return "Bitte registriere dich zuerst!";
-        }
-
-        // Passwort prüfen 
-        if (password_verify($passwort, $user['Kennwort'])) {
-            $_SESSION['veranstalter_loginname'] = $user['VeranstalterLoginName'];
-            header("Location: veranstalter_startseite.php");
-            exit();
-        } else {
-            return "Falsches Kennwort!";
-        }
-    }
-}
 
 // Registrierung
 if (isset($_POST['registrieren'])) {
@@ -103,7 +22,11 @@ if (isset($_POST['registrieren'])) {
         $veranstalter_objekt = new Veranstalter();
         $ergebnis = $veranstalter_objekt->veranstalterRegistrieren($loginname, $passwort, $passwort_bestaetigen);
 
-        if ($ergebnis !== true) {
+        if ($ergebnis === true) {
+            $_SESSION['veranstalter_loginname'] = $loginname;
+            header("Location: veranstalter_startseite.php");
+            exit();
+        } else {
             $fehlermeldung = $ergebnis;
         }
     }
@@ -120,7 +43,11 @@ if (isset($_POST['login'])) {
         $veranstalter_objekt = new Veranstalter();
         $ergebnis = $veranstalter_objekt->veranstalterAnmelden($loginname, $passwort);
 
-        if ($ergebnis !== true) {
+        if ($ergebnis === true) {
+            $_SESSION['veranstalter_loginname'] = $loginname;
+            header("Location: veranstalter_startseite.php");
+            exit();
+        } else {
             $fehlermeldung = $ergebnis;
         }
     }
@@ -138,7 +65,7 @@ if (isset($_POST['login'])) {
 <body>
 
     <h1>Veranstalter einloggen</h1>
-    
+
     <?php if (!empty($fehlermeldung)): ?>
         <p>
             <?php echo $fehlermeldung; ?>

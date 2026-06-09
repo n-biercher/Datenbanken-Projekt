@@ -1,79 +1,11 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('session_management.php');
+include_once('include/session_management.php');
 sitzungStarten();
 zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
 
-include_once('dbh.php');
-
-
-class Ergebniserfassung extends Dbh
-{
-
-    public function vergangeneRennenHolen($veranstalter_loginname)
-    {
-        $sql = "SELECT * 
-            FROM Rennen 
-            WHERE VeranstalterLoginName = ? 
-            ORDER BY Datum DESC";
-
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$veranstalter_loginname]);
-        return $stmt->fetchAll();
-    }
-
-
-    public function fahrerZuRennenHolen($renn_id, $veranstalter_loginname)
-    {
-        $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname,f.Nachname
-            FROM Teilnahme t
-            JOIN Fahrer f
-                 ON t.MitarbeiterId = f.`Mitarbeiter-ID`
-                 AND t.Teamname = f.Teamname
-            JOIN Rennen r
-                 ON t.RennId = r.RennId
-            WHERE t.RennId = ?
-            AND r.VeranstalterLoginName = ?";
-
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([$renn_id, $veranstalter_loginname]);
-        return $stmt->fetchAll();
-    }
-
-    public function ergebnisseSpeichern($renn_id, $fahrer_daten, $mitarbeiter_ids)
-    {
-        $verbindung = $this->connect();
-
-        try {
-            $verbindung->beginTransaction();
-
-            $sql = "UPDATE Teilnahme 
-                SET Platzierung = ?, Zeit = ? 
-                WHERE RennId = ? 
-                AND MitarbeiterId = ? 
-                AND Teamname = ?";
-
-            $stmt = $verbindung->prepare($sql);
-
-            foreach ($mitarbeiter_ids as $mitarbeiter_id) {
-                $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
-                $zeit = $_POST['zeit_' . $mitarbeiter_id];
-                $teamname = $fahrer_daten[$mitarbeiter_id];
-
-                $stmt->execute([$platzierung, $zeit, $renn_id, $mitarbeiter_id, $teamname]);
-            }
-
-            $verbindung->commit();
-            return true;
-
-        } catch (PDOException $e) {
-            $verbindung->rollBack();
-            return false;
-        }
-    }
-
-}
+include_once('classes/Ergebniserfassung.php');
 
 $erfassung_objekt = new Ergebniserfassung();
 $vergangeneRennen = $erfassung_objekt->vergangeneRennenHolen($_SESSION['veranstalter_loginname']);
@@ -149,12 +81,21 @@ if (isset($_POST['ergebnisse_speichern'])) {
 
         $vergebene_platzierungen[] = $platzierung;
     }
-    if (!$fehler) {
-        $gespeichert = $erfassung_objekt->ergebnisseSpeichern(
-            $renn_id,
-            $fahrer_daten,
-            $_POST['mitarbeiter_ids']
-        );
+if (!$fehler) {
+    $ergebnisse = [];
+
+    foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+        $ergebnisse[$mitarbeiter_id] = [
+            'platzierung' => $_POST['platzierung_' . $mitarbeiter_id],
+            'zeit' => $_POST['zeit_' . $mitarbeiter_id],
+            'teamname' => $fahrer_daten[$mitarbeiter_id]
+        ];
+    }
+
+    $gespeichert = $erfassung_objekt->ergebnisseSpeichern(
+        $renn_id,
+        $ergebnisse
+    );
 
         if ($gespeichert) {
             $erfolgsmeldung = "Ergebnisse wurden erfolgreich gespeichert!";

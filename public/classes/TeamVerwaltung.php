@@ -7,7 +7,7 @@ if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     exit();
 }
 
-include_once('dbh.php');
+include_once('include/dbh.php');
 
 class TeamVerwaltung extends Dbh {
     function sicherenWertAuslesen(array $datensatz, string $schluessel): string {

@@ -2,8 +2,8 @@
 
 <?php
 
-include_once('session_management.php');
-include_once('TeamVerwaltung.php');
+include_once('include/session_management.php');
+include_once('classes/TeamVerwaltung.php');
 
 sitzungStarten();
 zugriffPruefen('teamchef_loginname');

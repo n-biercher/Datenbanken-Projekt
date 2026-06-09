@@ -1,7 +1,7 @@
 <!-- Nicolas Biercher Beginn -->
 <?php
 ob_start();
-include_once('session_management.php');
+include_once('include/session_management.php');
 session_start();
 sitzungBeenden();
 
