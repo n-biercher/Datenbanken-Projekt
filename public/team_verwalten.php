@@ -6,7 +6,7 @@ include_once('session_management.php');
 include_once('TeamVerwaltung.php');
 
 sitzungStarten();
-zugriffPruefen('teamchef_loginname', 'teamchef_anmelden.php');
+zugriffPruefen('teamchef_loginname');
 
 $teamchef_loginname = $_SESSION['teamchef_loginname'];
 $verwaltung         = new TeamVerwaltung();

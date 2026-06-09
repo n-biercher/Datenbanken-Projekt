@@ -21,7 +21,7 @@ function sitzungStarten(): void
         $_SESSION['fingerabdruck'] = $fingerabdruck;
     } elseif (!hash_equals($_SESSION['fingerabdruck'], $fingerabdruck)) {
         sitzungBeenden();
-        header("Location: anmelden.php?fehler=sitzung_ungueltig");
+        header("Location: index.php?fehler=sitzung_ungueltig");
         exit();
     }
 
@@ -31,7 +31,7 @@ function sitzungStarten(): void
 
         if ($inaktiv_seit > SITZUNG_TIMEOUT_SEKUNDEN) {
             sitzungBeenden();
-            header("Location: anmelden.php?fehler=sitzung_abgelaufen");
+            header("Location: index.php?fehler=sitzung_abgelaufen");
             exit();
         }
     }
@@ -51,7 +51,7 @@ function sitzungBeenden(): void
     session_destroy();
 }
 
-function zugriffPruefen(string $sitzungsschluessel, string $weiterleitungsziel = 'anmelden.php'): void
+function zugriffPruefen(string $sitzungsschluessel, string $weiterleitungsziel = 'index.php?fehler=kein_zugriff'): void
 {
     if (!isset($_SESSION[$sitzungsschluessel])) {
         header("Location: $weiterleitungsziel");
