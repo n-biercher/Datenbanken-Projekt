@@ -179,124 +179,124 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team verwalten</title>
 </head>
-<body>
+    <body>
 
-<h1>Team: <?php echo htmlspecialchars($teamname); ?> verwalten</h1>
+        <h1>Team: <?php echo htmlspecialchars($teamname); ?> verwalten</h1>
 
-<p><a href="index.php">Zurück zur Startseite</a></p>
+        <p><a href="index.php">Zurück zur Startseite</a></p>
 
-<?php if ($meldung !== ""): ?>
-    <p><?php echo htmlspecialchars($meldung); ?></p>
-<?php endif; ?>
+        <?php if ($meldung !== ""): ?>
+            <p><?php echo htmlspecialchars($meldung); ?></p>
+        <?php endif; ?>
 
-<?php if ($fehler !== ""): ?>
-    <p><?php echo htmlspecialchars($fehler); ?></p>
-<?php endif; ?>
+        <?php if ($fehler !== ""): ?>
+            <p><?php echo htmlspecialchars($fehler); ?></p>
+        <?php endif; ?>
 
-<h2>
-    <?php echo $bearbeitungsmodus ? "Fahrer bearbeiten" : "Fahrer erstellen"; ?>
-</h2>
+        <h2>
+            <?php echo $bearbeitungsmodus ? "Fahrer bearbeiten" : "Fahrer erstellen"; ?>
+        </h2>
 
-<form action="" method="POST">
-    <input type="hidden" name="csrf_token"        value="<?php echo $_SESSION['csrf_token']; ?>">
-    <input type="hidden" name="bearbeitungsmodus" value="<?php echo $bearbeitungsmodus ? '1' : '0'; ?>">
+        <form action="" method="POST">
+            <input type="hidden" name="csrf_token"        value="<?php echo $_SESSION['csrf_token']; ?>">
+            <input type="hidden" name="bearbeitungsmodus" value="<?php echo $bearbeitungsmodus ? '1' : '0'; ?>">
 
-    <?php if ($bearbeitungsmodus): ?>
-        <input type="hidden" name="mitarbeiter_id" value="<?php echo htmlspecialchars($formulardaten['mitarbeiter_id']); ?>">
-        <p>Mitarbeiter-ID: <?php echo htmlspecialchars($formulardaten['mitarbeiter_id']); ?></p>
-    <?php endif; ?>
+            <?php if ($bearbeitungsmodus): ?>
+                <input type="hidden" name="mitarbeiter_id" value="<?php echo htmlspecialchars($formulardaten['mitarbeiter_id']); ?>">
+                <p>Mitarbeiter-ID: <?php echo htmlspecialchars($formulardaten['mitarbeiter_id']); ?></p>
+            <?php endif; ?>
 
-    <p>
-        <label>Vorname</label><br>
-        <input name="vorname" value="<?php echo htmlspecialchars($formulardaten['vorname']); ?>" required>
-    </p>
+            <p>
+                <label>Vorname</label><br>
+                <input name="vorname" value="<?php echo htmlspecialchars($formulardaten['vorname']); ?>" required>
+            </p>
 
-    <p>
-        <label>Nachname</label><br>
-        <input name="nachname" value="<?php echo htmlspecialchars($formulardaten['nachname']); ?>" required>
-    </p>
+            <p>
+                <label>Nachname</label><br>
+                <input name="nachname" value="<?php echo htmlspecialchars($formulardaten['nachname']); ?>" required>
+            </p>
 
-    <p>
-        <label>Straße</label><br>
-        <input name="strasse" value="<?php echo htmlspecialchars($formulardaten['strasse']); ?>" required>
-    </p>
+            <p>
+                <label>Straße</label><br>
+                <input name="strasse" value="<?php echo htmlspecialchars($formulardaten['strasse']); ?>" required>
+            </p>
 
-    <p>
-        <label>Hausnummer</label><br>
-        <input name="hausnummer" value="<?php echo htmlspecialchars($formulardaten['hausnummer']); ?>" required>
-    </p>
+            <p>
+                <label>Hausnummer</label><br>
+                <input name="hausnummer" value="<?php echo htmlspecialchars($formulardaten['hausnummer']); ?>" required>
+            </p>
 
-    <p>
-        <label>Telefonnummer</label><br>
-        <input name="telefonnummer" value="<?php echo htmlspecialchars($formulardaten['telefonnummer']); ?>" required>
-    </p>
+            <p>
+                <label>Telefonnummer</label><br>
+                <input name="telefonnummer" value="<?php echo htmlspecialchars($formulardaten['telefonnummer']); ?>" required>
+            </p>
 
-    <p>
-        <label>PLZ</label><br>
-        <input name="plz" maxlength="5" value="<?php echo htmlspecialchars($formulardaten['plz']); ?>" required>
-    </p>
+            <p>
+                <label>PLZ</label><br>
+                <input name="plz" maxlength="5" value="<?php echo htmlspecialchars($formulardaten['plz']); ?>" required>
+            </p>
 
-    <p>
-        <label>Ort</label><br>
-        <input name="ort" value="<?php echo htmlspecialchars($formulardaten['ort']); ?>" required>
-    </p>
+            <p>
+                <label>Ort</label><br>
+                <input name="ort" value="<?php echo htmlspecialchars($formulardaten['ort']); ?>" required>
+            </p>
 
-    <p>
-        <input type="submit" name="fahrer_speichern" value="Speichern">
-    </p>
-</form>
+            <p>
+                <input type="submit" name="fahrer_speichern" value="Speichern">
+            </p>
+        </form>
 
-<?php if ($bearbeitungsmodus): ?>
-    <p><a href="team_verwalten.php">Neuen Fahrer erstellen</a></p>
-<?php endif; ?>
+        <?php if ($bearbeitungsmodus): ?>
+            <p><a href="team_verwalten.php">Neuen Fahrer erstellen</a></p>
+        <?php endif; ?>
 
-<h2>Alle Fahrer</h2>
+        <h2>Alle Fahrer</h2>
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Mitarbeiter-ID</th>
-        <th>Vorname</th>
-        <th>Nachname</th>
-        <th>Straße</th>
-        <th>Hausnummer</th>
-        <th>Telefonnummer</th>
-        <th>PLZ</th>
-        <th>Ort</th>
-        <th>Teamname</th>
-        <th>Aktion</th>
-    </tr>
-
-    <?php if (count($alle_fahrer) > 0): ?>
-        <?php foreach ($alle_fahrer as $fahrer): ?>
+        <table border="1" cellpadding="6" cellspacing="0">
             <tr>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Vorname'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Nachname'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Straße'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Hausnummer'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Telefonnummer'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'PLZ'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Ort'); ?></td>
-                <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Teamname'); ?></td>
-                <td>
-                    <a href="team_verwalten.php?bearbeiten=<?php echo urlencode($verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID')); ?>">Bearbeiten</a>
-
-                    <form action="" method="POST">
-                        <input type="hidden" name="csrf_token"     value="<?php echo $_SESSION['csrf_token']; ?>">
-                        <input type="hidden" name="mitarbeiter_id" value="<?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID'); ?>">
-                        <input type="submit" name="fahrer_loeschen" value="Löschen" onclick="return confirm('Soll dieser Fahrer wirklich gelöscht werden?');">
-                    </form>
-                </td>
+                <th>Mitarbeiter-ID</th>
+                <th>Vorname</th>
+                <th>Nachname</th>
+                <th>Straße</th>
+                <th>Hausnummer</th>
+                <th>Telefonnummer</th>
+                <th>PLZ</th>
+                <th>Ort</th>
+                <th>Teamname</th>
+                <th>Aktion</th>
             </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="10">Keine Fahrer gefunden</td>
-        </tr>
-    <?php endif; ?>
-</table>
 
-</body>
+            <?php if (count($alle_fahrer) > 0): ?>
+                <?php foreach ($alle_fahrer as $fahrer): ?>
+                    <tr>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Vorname'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Nachname'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Straße'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Hausnummer'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Telefonnummer'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'PLZ'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Ort'); ?></td>
+                        <td><?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Teamname'); ?></td>
+                        <td>
+                            <a href="team_verwalten.php?bearbeiten=<?php echo urlencode($verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID')); ?>">Bearbeiten</a>
+
+                            <form action="" method="POST">
+                                <input type="hidden" name="csrf_token"     value="<?php echo $_SESSION['csrf_token']; ?>">
+                                <input type="hidden" name="mitarbeiter_id" value="<?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID'); ?>">
+                                <input type="submit" name="fahrer_loeschen" value="Löschen" onclick="return confirm('Soll dieser Fahrer wirklich gelöscht werden?');">
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="10">Keine Fahrer gefunden</td>
+                </tr>
+            <?php endif; ?>
+        </table>
+
+    </body>
 </html>
 
 <!-- Nicolas Biercher Ende -->

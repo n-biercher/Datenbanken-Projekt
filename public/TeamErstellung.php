@@ -37,8 +37,7 @@ class TeamRegistrierung extends Dbh
         string $nachname,
         string $loginname,
         string $kennwort,
-        string $kennwort_bestaetigung
-    ): ?string {
+        string $kennwort_bestaetigung): ?string {
         if ($kennwort !== $kennwort_bestaetigung) {
             return "Kennwörter stimmen nicht überein";
         }

@@ -100,8 +100,7 @@ class TeamVerwaltung extends Dbh {
         string $telefonnummer,
         string $plz,
         string $ort,
-        string $teamname
-    ): array|false {
+        string $teamname): array|false {
         $db = $this->connect();
 
         $db->beginTransaction();
@@ -142,8 +141,7 @@ class TeamVerwaltung extends Dbh {
         string $telefonnummer,
         string $plz,
         string $ort,
-        string $teamname
-    ): string {
+        string $teamname): string {
         $db = $this->connect();
 
         $db->beginTransaction();
