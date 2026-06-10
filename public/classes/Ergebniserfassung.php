@@ -7,10 +7,17 @@ class Ergebniserfassung extends Dbh
 
     public function rennenHolen($veranstalter_loginname)
     {
-        $sql = "SELECT * 
-            FROM Rennen 
-            WHERE VeranstalterLoginName = ? 
-            ORDER BY Datum DESC";
+        $sql = "SELECT *
+            FROM Rennen r
+            WHERE r.VeranstalterLoginName = ?
+            AND NOT EXISTS (
+                SELECT 1
+                FROM Teilnahme t
+                WHERE t.RennId = r.RennId
+                AND t.Platzierung IS NOT NULL
+                AND t.Zeit IS NOT NULL
+            )
+            ORDER BY r.Datum DESC";
 
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([$veranstalter_loginname]);
@@ -33,6 +40,20 @@ class Ergebniserfassung extends Dbh
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([$renn_id, $veranstalter_loginname]);
         return $stmt->fetchAll();
+    }
+
+    public function ergebnisseSchonErfasst($renn_id)
+    {
+        $sql = "SELECT COUNT(*)
+            FROM Teilnahme
+            WHERE RennId = ?
+            AND Platzierung IS NOT NULL
+            AND Zeit IS NOT NULL";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$renn_id]);
+
+        return $stmt->fetchColumn() > 0;
     }
     public function ergebnisseSpeichern($renn_id, $ergebnisse)
     {

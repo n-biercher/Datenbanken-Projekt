@@ -35,6 +35,7 @@ class Rennen extends Dbh
                 FROM Rennen r
                 JOIN Teilnahme t ON r.RennId = t.RennId
                 JOIN Fahrer f ON t.MitarbeiterId = f.`Mitarbeiter-ID`
+                AND t.Teamname = f.Teamname
                 JOIN Team te ON f.Teamname = te.Teamname
                 WHERE te.TeamchefLoginName = ?
                 ORDER BY r.Datum DESC";
@@ -74,6 +75,7 @@ class Rennen extends Dbh
         $sql = "SELECT f.Vorname, f.Nachname
                 FROM Teilnahme t
                 JOIN Fahrer f ON t.MitarbeiterId = f.`Mitarbeiter-ID`
+                AND t.Teamname = f.Teamname
                 JOIN Team te ON f.Teamname = te.Teamname
                 WHERE t.RennId = ? AND te.TeamchefLoginName = ?";
 
