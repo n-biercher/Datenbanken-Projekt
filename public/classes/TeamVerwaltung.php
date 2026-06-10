@@ -154,6 +154,11 @@ class TeamVerwaltung extends Dbh {
             $ergebnis = $abfrage->fetch(PDO::FETCH_ASSOC);
             $abfrage->closeCursor();
 
+            if (!$ergebnis || (int)$ergebnis['erfolg'] === 0) {
+                $db->rollBack();
+                return $ergebnis ?: false;
+            }
+
             $db->commit();
 
             return $ergebnis;

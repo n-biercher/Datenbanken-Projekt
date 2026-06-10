@@ -1,6 +1,5 @@
 <?php
 /**
- * 
  * Nicolas Biercher
  */
 

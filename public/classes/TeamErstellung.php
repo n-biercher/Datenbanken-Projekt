@@ -80,6 +80,16 @@ class TeamRegistrierung extends Dbh {
         string $kennwort,
         string $kennwort_bestaetigung): ?string {
 
+        if (strlen($teamname) < 2 || strlen($teamname) > 50) {
+            return "Teamname muss zwischen 2 und 50 Zeichen lang sein.";
+        }
+        if (strlen($vorname) < 2 || strlen($vorname) > 45) {
+            return "Vorname muss zwischen 2 und 45 Zeichen lang sein.";
+        }
+        if (strlen($nachname) < 2 || strlen($nachname) > 45) {
+            return "Nachname muss zwischen 2 und 45 Zeichen lang sein.";
+        }
+
         if ($kennwort !== $kennwort_bestaetigung) {
             return "Kennwörter stimmen nicht überein";
         }
