@@ -18,11 +18,16 @@ if (isset($_POST['login'])) {
     if (!csrfTokenGueltig()) {
         $fehler = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
-        $login  = new TeamchefLogin();
-        $fehler = $login->login(
+        $login    = new TeamchefLogin();
+        $ergebnis = $login->login(
             trim($_POST['loginname'] ?? ''),
             $_POST['kennwort'] ?? ''
-        ) ?? '';
+        );
+        if ($ergebnis === null) {
+            header("Location: index.php");
+            exit();
+        }
+        $fehler = $ergebnis;
     }
 }
 ?>

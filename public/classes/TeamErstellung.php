@@ -48,7 +48,7 @@ class TeamRegistrierung extends Dbh {
         return null;
     }
 
-    private function teamInDatenbankEintragen(
+    private function teamAnlegen(
         PDO    $db,
         string $teamname,
         string $loginname,
@@ -107,7 +107,7 @@ class TeamRegistrierung extends Dbh {
         }
 
         $hash = password_hash($kennwort, PASSWORD_DEFAULT);
-        $this->teamInDatenbankEintragen($db, $teamname, $loginname, $vorname, $nachname, $hash);
+        $this->teamAnlegen($db, $teamname, $loginname, $vorname, $nachname, $hash);
 
         return null;
     }

@@ -10,7 +10,7 @@ if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     exit();
 }
 
-include_once ('include/dbh.php');
+include_once('include/dbh.php');
 
 class TeamchefLogin extends Dbh {
     public function login(string $loginname, string $kennwort): ?string {
@@ -29,8 +29,7 @@ class TeamchefLogin extends Dbh {
             $_SESSION['vorname']             = $user['Vorname'];
             $_SESSION['nachname']            = $user['Nachname'];
 
-            header("Location: index.php");
-            exit();
+            return null;
         }
 
         return "Loginname oder Kennwort ist falsch.";

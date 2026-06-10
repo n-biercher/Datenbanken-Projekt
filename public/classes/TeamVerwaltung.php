@@ -13,15 +13,15 @@ if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
 include_once('include/dbh.php');
 
 class TeamVerwaltung extends Dbh {
-    function sicherenWertAuslesen(array $datensatz, string $schluessel): string {
+    public function sicherenWertAuslesen(array $datensatz, string $schluessel): string {
         return isset($datensatz[$schluessel]) ? htmlspecialchars($datensatz[$schluessel]) : '';
     }
 
-    function postWertLesen(string $feldname): string {
+    public function postWertLesen(string $feldname): string {
         return isset($_POST[$feldname]) ? trim($_POST[$feldname]) : '';
     }
 
-    function fahrerDatenValidieren(array $daten): array {
+    public function fahrerDatenValidieren(array $daten): array {
         $fehlerliste = [];
 
         if (strlen($daten['vorname']) < 2 || strlen($daten['vorname']) > 50) {

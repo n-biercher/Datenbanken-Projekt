@@ -57,14 +57,14 @@ if (isset($_GET['bearbeiten'])) {
             if ($fahrer) {
                 $bearbeitungsmodus = true;
 
-                $formulardaten['mitarbeiter_id'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID');
-                $formulardaten['vorname'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Vorname');
-                $formulardaten['nachname'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Nachname');
-                $formulardaten['strasse'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Straße');
-                $formulardaten['hausnummer'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Hausnummer');
-                $formulardaten['telefonnummer'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Telefonnummer');
-                $formulardaten['plz'] = $verwaltung->sicherenWertAuslesen($fahrer, 'PLZ');
-                $formulardaten['ort'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Ort');
+                $formulardaten['mitarbeiter_id'] = $fahrer['Mitarbeiter-ID'] ?? '';
+                $formulardaten['vorname'] = $fahrer['Vorname'] ?? '';
+                $formulardaten['nachname'] = $fahrer['Nachname'] ?? '';
+                $formulardaten['strasse'] = $fahrer['Straße'] ?? '';
+                $formulardaten['hausnummer'] = $fahrer['Hausnummer'] ?? '';
+                $formulardaten['telefonnummer'] = $fahrer['Telefonnummer'] ?? '';
+                $formulardaten['plz'] = $fahrer['PLZ'] ?? '';
+                $formulardaten['ort'] = $fahrer['Ort'] ?? '';
             } else {
                 $fehler = "Fahrer wurde nicht gefunden.";
             }
@@ -112,7 +112,7 @@ if (isset($_POST['fahrer_speichern'])) {
                         $teamname
                     );
 
-                    if ($ergebnis['erfolg'] == 1) {
+                    if ((int)$ergebnis['erfolg'] === 1) {
                         $meldung = $ergebnis['meldung'];
                         if (!$bearbeitungsmodus) {
                             $formulardaten = leereFormulardaten();
