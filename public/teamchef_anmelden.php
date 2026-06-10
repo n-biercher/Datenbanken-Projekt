@@ -1,4 +1,3 @@
-<!-- Nicolas Biercher Beginn -->
 <?php
 include_once('include/session_management.php');
 include_once('classes/TeamchefLogin.php');
@@ -30,6 +29,7 @@ if (isset($_POST['login'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Teamchef anmelden</title>
+    <!-- Nicolas Biercher Beginn -->
 </head>
 
 <body>
@@ -41,7 +41,7 @@ if (isset($_POST['login'])) {
 <?php endif; ?>
 
 <form action="" method="POST">
-    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
     <fieldset>
         <legend>Login</legend>
 

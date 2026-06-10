@@ -14,36 +14,35 @@ $erfolgsmeldung = "";
 
 // Formularverarbeitung
 if (isset($_POST['anlegen'])) {
-    $datum = $_POST['datum'];
-    $plz = $_POST['plz'];
-    $ort = $_POST['ort'];
-    $kilometer = $_POST['kilometer'];
-    $hoehenmeter = $_POST['hoehenmeter'];
-    $maximale_steigung = $_POST['maximale_steigung'];
-
-    if (!is_numeric($maximale_steigung)) {
-        $fehlermeldung = "Maximale Steigung muss eine Zahl sein!";
-
-    } elseif ($maximale_steigung > 100) {
-        $fehlermeldung = "Fehler: Maximale Steigung darf nicht größer als 100% sein!";
-    } elseif (!is_numeric($hoehenmeter)) {
-
-        $fehlermeldung = "Höhenmeter muss eine Zahl sein!";
-
-    } elseif (!is_numeric($kilometer)) {
-
-        $fehlermeldung = "Kilometer muss eine Zahl sein!";
-    } elseif (strlen($plz) != 5 || !ctype_digit($plz)) {
-        $fehlermeldung = "Postleitzahl muss aus genau 5 Ziffern bestehen!";
-
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
-        $rennen_anlegen = new Rennen();
-        $gespeichert = $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']);
+        $datum = $_POST['datum'];
+        $plz = $_POST['plz'];
+        $ort = $_POST['ort'];
+        $kilometer = $_POST['kilometer'];
+        $hoehenmeter = $_POST['hoehenmeter'];
+        $maximale_steigung = $_POST['maximale_steigung'];
 
-        if ($gespeichert) {
-            $erfolgsmeldung = "Rennen erfolgreich angelegt!";
+        if (!is_numeric($maximale_steigung)) {
+            $fehlermeldung = "Maximale Steigung muss eine Zahl sein!";
+        } elseif ($maximale_steigung > 100) {
+            $fehlermeldung = "Fehler: Maximale Steigung darf nicht größer als 100% sein!";
+        } elseif (!is_numeric($hoehenmeter)) {
+            $fehlermeldung = "Höhenmeter muss eine Zahl sein!";
+        } elseif (!is_numeric($kilometer)) {
+            $fehlermeldung = "Kilometer muss eine Zahl sein!";
+        } elseif (strlen($plz) != 5 || !ctype_digit($plz)) {
+            $fehlermeldung = "Postleitzahl muss aus genau 5 Ziffern bestehen!";
         } else {
-            $fehlermeldung = "Fehler beim Anlegen des Rennens.";
+            $rennen_anlegen = new Rennen();
+            $gespeichert = $rennen_anlegen->rennenAnlegen($datum, $plz, $ort, $kilometer, $maximale_steigung, $hoehenmeter, $_SESSION['veranstalter_loginname']);
+
+            if ($gespeichert) {
+                $erfolgsmeldung = "Rennen erfolgreich angelegt!";
+            } else {
+                $fehlermeldung = "Fehler beim Anlegen des Rennens.";
+            }
         }
     }
 }
@@ -69,7 +68,10 @@ if (isset($_POST['anlegen'])) {
 
     <p>Du bist jetzt eingeloggt.</p>
 
-    <p><a href="logout.php">Logout</a></p>
+    <form action="logout.php" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+        <button type="submit">Logout</button>
+    </form>
 
     <h2>Rennen-Ergebniserfassung</h2>
     <p><a href="rennen_ergebniserfassung.php">Rennen Ergebniserfassung</a></p>
@@ -86,6 +88,7 @@ if (isset($_POST['anlegen'])) {
 
 
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <fieldset>
             <legend>Bitte gib die Daten für das Rennen unten ein</legend>
 

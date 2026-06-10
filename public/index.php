@@ -1,4 +1,3 @@
-<!-- Nicolas Biercher Beginn -->
 <?php
 include_once('include/session_management.php');
 sitzungStarten();
@@ -24,6 +23,7 @@ if (isset($_GET['fehler'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Portal – Radrennen</title>
+    <!-- Nicolas Biercher Beginn -->
 </head>
 <body>
 
@@ -43,7 +43,12 @@ if (isset($_GET['fehler'])) {
     <ul>
         <li><a href="team_verwalten.php">Team verwalten</a></li>
         <li><a href="teamchef_startseite.php">Team Startseite</a></li>
-        <li><a href="logout.php">Logout</a></li>
+        <li>
+            <form action="logout.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <button type="submit">Logout</button>
+            </form>
+        </li>
     </ul>
 
 <?php elseif (isset($_SESSION['veranstalter_loginname'])): ?>
@@ -56,7 +61,12 @@ if (isset($_GET['fehler'])) {
     <ul>
         <li><a href="veranstalter_startseite.php">Veranstalter Startseite</a></li>
         <li><a href="rennen_ergebniserfassung.php">Rennen Ergebniserfassung</a></li>
-        <li><a href="logout.php">Logout</a></li>
+        <li>
+            <form action="logout.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <button type="submit">Logout</button>
+            </form>
+        </li>
     </ul>
 
 <?php elseif (isset($_SESSION['fahrer_loginname'])): ?>
@@ -67,7 +77,12 @@ if (isset($_GET['fehler'])) {
     </p>
 
     <ul>
-        <li><a href="logout.php">Logout</a></li>
+        <li>
+            <form action="logout.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <button type="submit">Logout</button>
+            </form>
+        </li>
     </ul>
 
 <?php else: ?>

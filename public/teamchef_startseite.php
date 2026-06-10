@@ -21,12 +21,15 @@ $fehlermeldung = "";
 $erfolgsmeldung = "";
 
 if (isset($_POST['kopieren_anzeigen'])) {
-    $kopieren_anzeigen = true;
+    if (csrfTokenGueltig()) {
+        $kopieren_anzeigen = true;
+    }
 }
 
 if (isset($_POST['rennen_auswaehlen'])) {
-    if (!empty($_POST['rennid']) && !empty($_POST['anzahl_fahrer'])) {
-
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
+    } elseif (!empty($_POST['rennid']) && !empty($_POST['anzahl_fahrer'])) {
         $renn_id = $_POST['rennid'];
         $anzahl_fahrer = (int) $_POST['anzahl_fahrer'];
 
@@ -37,69 +40,79 @@ if (isset($_POST['rennen_auswaehlen'])) {
         }
     }
 }
+
 if (isset($_POST['fahrer_anmelden'])) {
-    $renn_id = $_POST['renn_id'];
-    $doppelt = false;
-    $ausgewaehlte_fahrer = [];
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
+    } else {
+        $renn_id = $_POST['renn_id'];
+        $doppelt = false;
+        $ausgewaehlte_fahrer = [];
 
-    if (!$rennen_objekt->rennenExistiert($renn_id)) {
-        $fehlermeldung = "Ungültiges Rennen ausgewählt.";
-        $doppelt = true;
-    }
-
-    if (!$doppelt) {
-        for ($i = 1; $i <= $_POST['anzahl_fahrer']; $i++) {
-            $mitarbeiter_id = $_POST['fahrer_' . $i];
-
-            if (in_array($mitarbeiter_id, $ausgewaehlte_fahrer)) {
-                $fehlermeldung = "Ein Fahrer darf nicht mehrfach ausgewählt werden!";
-                $doppelt = true;
-                break;
-            }
-
-            $ausgewaehlte_fahrer[] = $mitarbeiter_id;
+        if (!$rennen_objekt->rennenExistiert($renn_id)) {
+            $fehlermeldung = "Ungültiges Rennen ausgewählt.";
+            $doppelt = true;
         }
-    }
 
-    if (!$doppelt) {
-        $angemeldet = $rennen_objekt->fahrerAnmelden(
-            $ausgewaehlte_fahrer,
-            $renn_id,
-            $_SESSION['teamchef_loginname']
-        );
+        if (!$doppelt) {
+            for ($i = 1; $i <= $_POST['anzahl_fahrer']; $i++) {
+                $mitarbeiter_id = $_POST['fahrer_' . $i];
 
-        if ($angemeldet) {
-            $erfolgsmeldung = "Fahrer wurden erfolgreich angemeldet!";
-        } else {
-            $fehlermeldung = "Mindestens ein Fahrer ist bereits angemeldet oder ungültig.";
+                if (in_array($mitarbeiter_id, $ausgewaehlte_fahrer)) {
+                    $fehlermeldung = "Ein Fahrer darf nicht mehrfach ausgewählt werden!";
+                    $doppelt = true;
+                    break;
+                }
+
+                $ausgewaehlte_fahrer[] = $mitarbeiter_id;
+            }
+        }
+
+        if (!$doppelt) {
+            $angemeldet = $rennen_objekt->fahrerAnmelden(
+                $ausgewaehlte_fahrer,
+                $renn_id,
+                $_SESSION['teamchef_loginname']
+            );
+
+            if ($angemeldet) {
+                $erfolgsmeldung = "Fahrer wurden erfolgreich angemeldet!";
+            } else {
+                $fehlermeldung = "Mindestens ein Fahrer ist bereits angemeldet oder ungültig.";
+            }
         }
     }
 }
 
 if (isset($_POST['kopieren'])) {
-    $altes_rennen = $_POST['altes_rennen'] ?? '';
-    $neues_rennen = $_POST['neues_rennen'] ?? '';
-
-    if (empty($altes_rennen) || empty($neues_rennen)) {
-        $fehlermeldung = "Bitte wähle beide Rennen aus!";
-        $kopieren_anzeigen = true;
-    } elseif ($altes_rennen === $neues_rennen) {
-        $fehlermeldung = "Bitte wähle zwei verschiedene Rennen aus!";
-        $kopieren_anzeigen = true;
-    } elseif (!$rennen_objekt->rennenGehoertZuTeamchef($altes_rennen, $_SESSION['teamchef_loginname'])) {
-        $fehlermeldung = "Das Quell-Rennen gehört nicht zu deinem Team.";
-        $kopieren_anzeigen = true;
-    } elseif (!$rennen_objekt->rennenExistiert($neues_rennen)) {
-        $fehlermeldung = "Das Ziel-Rennen ist ungültig.";
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
         $kopieren_anzeigen = true;
     } else {
-        $kopiert = $rennen_objekt->teilnahmenKopieren($altes_rennen, $neues_rennen);
+        $altes_rennen = $_POST['altes_rennen'] ?? '';
+        $neues_rennen = $_POST['neues_rennen'] ?? '';
 
-        if ($kopiert) {
-            $erfolgsmeldung = "Fahrer wurden erfolgreich kopiert!";
-        } else {
-            $fehlermeldung = "Fehler beim Kopieren der Fahrer.";
+        if (empty($altes_rennen) || empty($neues_rennen)) {
+            $fehlermeldung = "Bitte wähle beide Rennen aus!";
             $kopieren_anzeigen = true;
+        } elseif ($altes_rennen === $neues_rennen) {
+            $fehlermeldung = "Bitte wähle zwei verschiedene Rennen aus!";
+            $kopieren_anzeigen = true;
+        } elseif (!$rennen_objekt->rennenGehoertZuTeamchef($altes_rennen, $_SESSION['teamchef_loginname'])) {
+            $fehlermeldung = "Das Quell-Rennen gehört nicht zu deinem Team.";
+            $kopieren_anzeigen = true;
+        } elseif (!$rennen_objekt->rennenExistiert($neues_rennen)) {
+            $fehlermeldung = "Das Ziel-Rennen ist ungültig.";
+            $kopieren_anzeigen = true;
+        } else {
+            $kopiert = $rennen_objekt->teilnahmenKopieren($altes_rennen, $neues_rennen);
+
+            if ($kopiert) {
+                $erfolgsmeldung = "Fahrer wurden erfolgreich kopiert!";
+            } else {
+                $fehlermeldung = "Fehler beim Kopieren der Fahrer.";
+                $kopieren_anzeigen = true;
+            }
         }
     }
 }
@@ -117,7 +130,10 @@ if (isset($_POST['kopieren'])) {
 
     <h1>Willkommen <?php echo htmlentities($_SESSION['teamchef_loginname']); ?>!</h1>
 
-    <p><a href="logout.php">Logout</a></p>
+    <form action="logout.php" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+        <button type="submit">Logout</button>
+    </form>
     <p><a href="team_verwalten.php">Team verwalten</a></p>
 
     <?php if (!empty($fehlermeldung)): ?>
@@ -131,6 +147,7 @@ if (isset($_POST['kopieren'])) {
     <h2>Fahrer zu einem Rennen anmelden</h2>
 
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <fieldset>
             <legend>Schritt 1: Rennen und Anzahl Fahrer wählen</legend>
 
@@ -163,6 +180,7 @@ if (isset($_POST['kopieren'])) {
 
     <?php if ($formular_anzeigen): ?>
         <form action="" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <fieldset>
                 <legend>Schritt 2: Fahrer auswählen</legend>
 
@@ -202,11 +220,13 @@ if (isset($_POST['kopieren'])) {
     <h2>Anmeldung aus bestehendem Rennen kopieren</h2>
 
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <input type="submit" name="kopieren_anzeigen" value="Kopierformular anzeigen">
     </form>
 
     <?php if ($kopieren_anzeigen): ?>
         <form action="" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <fieldset>
                 <legend>Teilnahmen kopieren</legend>
 

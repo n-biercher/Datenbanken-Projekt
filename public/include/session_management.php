@@ -1,6 +1,10 @@
-<!-- Nicolas Biercher Beginn -->
-
 <?php
+// Nicolas Biercher Beginn
+
+if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    http_response_code(403);
+    exit();
+}
 
 define('SITZUNG_TIMEOUT_SEKUNDEN', 1800); // 30 Minuten Inaktivität
 
@@ -15,7 +19,7 @@ function sitzungStarten(): void
     }
 
     // Fingerabdruck aus Browser und IP initialisieren
-    $fingerabdruck = hash('sha256', $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
+    $fingerabdruck = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . $_SERVER['REMOTE_ADDR']);
 
     if (empty($_SESSION['fingerabdruck'])) {
         $_SESSION['fingerabdruck'] = $fingerabdruck;
@@ -73,6 +77,4 @@ function csrfTokenGueltig(): bool
     return isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']);
 }
 
-?>
-
-<!-- Nicolas Biercher Ende -->
+// Nicolas Biercher Ende

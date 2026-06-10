@@ -18,7 +18,9 @@ $fehlermeldung = "";
 $erfolgsmeldung = "";
 
 if (isset($_POST['rennen_auswaehlen'])) {
-    if (!empty($_POST['rennid'])) {
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
+    } elseif (!empty($_POST['rennid'])) {
         $renn_id = $_POST['rennid'];
         $tabelle_anzeigen = true;
     } else {
@@ -32,79 +34,72 @@ if ($tabelle_anzeigen) {
 
 
 if (isset($_POST['ergebnisse_speichern'])) {
-    $renn_id = $_POST['renn_id'];
-    $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id, $_SESSION['veranstalter_loginname']);
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
+    } else {
+        $renn_id = $_POST['renn_id'];
+        $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id, $_SESSION['veranstalter_loginname']);
 
-    $fehler = false;
+        $fehler = false;
 
-    if (empty($fahrer_liste)) {
-        $fehlermeldung = "Ungültiges Rennen oder keine Fahrer vorhanden.";
-        $fehler = true;
-    }
-
-    $fahrer_daten = [];
-
-    foreach ($fahrer_liste as $fahrer) {
-        $fahrer_daten[$fahrer['MitarbeiterId']] = $fahrer['Teamname'];
-    }
-
-    $max_platzierung = count($fahrer_liste);
-
-    foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-
-
-        if (!isset($fahrer_daten[$mitarbeiter_id])) {
-            $fehlermeldung = "Ungültiger Fahrer übermittelt.";
+        if (empty($fahrer_liste)) {
+            $fehlermeldung = "Ungültiges Rennen oder keine Fahrer vorhanden.";
             $fehler = true;
-            break;
-        }
-        $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
-        $zeit = $_POST['zeit_' . $mitarbeiter_id];
-        $teamname = $fahrer_daten[$mitarbeiter_id];
-
-        if (empty($platzierung) || empty($zeit)) {
-            $fehlermeldung = "Bitte fülle alle Platzierungen und Zeiten aus.";
-            $fehler = true;
-            break;
         }
 
-        if ($platzierung < 1 || $platzierung > $max_platzierung) {
-            $fehlermeldung = "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
-            $fehler = true;
-            break;
-        }
-        if (in_array($platzierung, $vergebene_platzierungen)) {
-            $fehlermeldung = "Jede Platzierung darf nur einmal vergeben werden.";
-            $fehler = true;
-            break;
+        $fahrer_daten = [];
+        foreach ($fahrer_liste as $fahrer) {
+            $fahrer_daten[$fahrer['MitarbeiterId']] = $fahrer['Teamname'];
         }
 
-        $vergebene_platzierungen[] = $platzierung;
+        $max_platzierung = count($fahrer_liste);
+
+        foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+            if (!isset($fahrer_daten[$mitarbeiter_id])) {
+                $fehlermeldung = "Ungültiger Fahrer übermittelt.";
+                $fehler = true;
+                break;
+            }
+            $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
+            $zeit = $_POST['zeit_' . $mitarbeiter_id];
+
+            if (empty($platzierung) || empty($zeit)) {
+                $fehlermeldung = "Bitte fülle alle Platzierungen und Zeiten aus.";
+                $fehler = true;
+                break;
+            }
+            if ($platzierung < 1 || $platzierung > $max_platzierung) {
+                $fehlermeldung = "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
+                $fehler = true;
+                break;
+            }
+            if (in_array($platzierung, $vergebene_platzierungen)) {
+                $fehlermeldung = "Jede Platzierung darf nur einmal vergeben werden.";
+                $fehler = true;
+                break;
+            }
+            $vergebene_platzierungen[] = $platzierung;
+        }
+
+        if (!$fehler) {
+            $ergebnisse = [];
+            foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
+                $ergebnisse[$mitarbeiter_id] = [
+                    'platzierung' => $_POST['platzierung_' . $mitarbeiter_id],
+                    'zeit'        => $_POST['zeit_' . $mitarbeiter_id],
+                    'teamname'    => $fahrer_daten[$mitarbeiter_id]
+                ];
+            }
+
+            $gespeichert = $erfassung_objekt->ergebnisseSpeichern($renn_id, $ergebnisse);
+
+            if ($gespeichert) {
+                $erfolgsmeldung = "Ergebnisse wurden erfolgreich gespeichert!";
+            } else {
+                $fehlermeldung = "Fehler beim Speichern der Ergebnisse.";
+            }
+        }
     }
-if (!$fehler) {
-    $ergebnisse = [];
-
-    foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-        $ergebnisse[$mitarbeiter_id] = [
-            'platzierung' => $_POST['platzierung_' . $mitarbeiter_id],
-            'zeit' => $_POST['zeit_' . $mitarbeiter_id],
-            'teamname' => $fahrer_daten[$mitarbeiter_id]
-        ];
-    }
-
-    $gespeichert = $erfassung_objekt->ergebnisseSpeichern(
-        $renn_id,
-        $ergebnisse
-    );
-
-        if ($gespeichert) {
-            $erfolgsmeldung = "Ergebnisse wurden erfolgreich gespeichert!";
-        } else {
-            $fehlermeldung = "Fehler beim Speichern der Ergebnisse.";
-        }
-    }
-
-
 }
 
 
@@ -121,7 +116,10 @@ if (!$fehler) {
 <body>
     <h1>Rennen Ergebniserfassung</h1>
 
-    <p><a href="logout.php">Logout</a></p>
+    <form action="logout.php" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+        <button type="submit">Logout</button>
+    </form>
 
     <?php if (!empty($fehlermeldung)): ?>
         <p>
@@ -137,6 +135,7 @@ if (!$fehler) {
 
 
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <fieldset>
             <legend>Bitte wähle ein Rennen aus um die Ergbnisse zu erfassen</legend>
 
@@ -176,6 +175,7 @@ if (!$fehler) {
         </h2>
 
         <form action="" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <input type="hidden" name="renn_id" value="<?php echo $renn_id; ?>">
 
             <table border="1" cellpadding="8">

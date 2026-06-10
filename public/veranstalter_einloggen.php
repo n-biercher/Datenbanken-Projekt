@@ -10,45 +10,53 @@ $fehlermeldung = "";
 
 // Registrierung
 if (isset($_POST['registrieren'])) {
-    $loginname = $_POST['veranstalter_loginname'];
-    $passwort = $_POST['veranstalter_kennwort'];
-    $passwort_bestaetigen = $_POST['veranstalter_kennwort_bestaetigung'];
-
-    if (empty($loginname) || empty($passwort) || empty($passwort_bestaetigen)) {
-        $fehlermeldung = "Bitte alle Felder ausfüllen!";
-    } elseif (strlen($loginname) > 50) {
-        $fehlermeldung = "Loginname darf maximal 50 Zeichen lang sein!";
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
-        $veranstalter_objekt = new Veranstalter();
-        $ergebnis = $veranstalter_objekt->veranstalterRegistrieren($loginname, $passwort, $passwort_bestaetigen);
+        $loginname = $_POST['veranstalter_loginname'];
+        $passwort = $_POST['veranstalter_kennwort'];
+        $passwort_bestaetigen = $_POST['veranstalter_kennwort_bestaetigung'];
 
-        if ($ergebnis === true) {
-            $_SESSION['veranstalter_loginname'] = $loginname;
-            header("Location: veranstalter_startseite.php");
-            exit();
+        if (empty($loginname) || empty($passwort) || empty($passwort_bestaetigen)) {
+            $fehlermeldung = "Bitte alle Felder ausfüllen!";
+        } elseif (strlen($loginname) > 50) {
+            $fehlermeldung = "Loginname darf maximal 50 Zeichen lang sein!";
         } else {
-            $fehlermeldung = $ergebnis;
+            $veranstalter_objekt = new Veranstalter();
+            $ergebnis = $veranstalter_objekt->veranstalterRegistrieren($loginname, $passwort, $passwort_bestaetigen);
+
+            if ($ergebnis === true) {
+                $_SESSION['veranstalter_loginname'] = $loginname;
+                header("Location: veranstalter_startseite.php");
+                exit();
+            } else {
+                $fehlermeldung = $ergebnis;
+            }
         }
     }
 }
 
 // Login
 if (isset($_POST['login'])) {
-    $loginname = $_POST['veranstalter_loginname'];
-    $passwort = $_POST['veranstalter_kennwort'];
-
-    if (empty($loginname) || empty($passwort)) {
-        $fehlermeldung = "Bitte Loginname und Kennwort eingeben!";
+    if (!csrfTokenGueltig()) {
+        $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
-        $veranstalter_objekt = new Veranstalter();
-        $ergebnis = $veranstalter_objekt->veranstalterAnmelden($loginname, $passwort);
+        $loginname = $_POST['veranstalter_loginname'];
+        $passwort = $_POST['veranstalter_kennwort'];
 
-        if ($ergebnis === true) {
-            $_SESSION['veranstalter_loginname'] = $loginname;
-            header("Location: veranstalter_startseite.php");
-            exit();
+        if (empty($loginname) || empty($passwort)) {
+            $fehlermeldung = "Bitte Loginname und Kennwort eingeben!";
         } else {
-            $fehlermeldung = $ergebnis;
+            $veranstalter_objekt = new Veranstalter();
+            $ergebnis = $veranstalter_objekt->veranstalterAnmelden($loginname, $passwort);
+
+            if ($ergebnis === true) {
+                $_SESSION['veranstalter_loginname'] = $loginname;
+                header("Location: veranstalter_startseite.php");
+                exit();
+            } else {
+                $fehlermeldung = $ergebnis;
+            }
         }
     }
 }
@@ -74,6 +82,7 @@ if (isset($_POST['login'])) {
 
 
     <form action="" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <fieldset>
             <legend>Login-Daten unten eintragen</legend>
 

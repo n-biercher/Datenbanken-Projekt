@@ -1,6 +1,5 @@
-<!-- Nicolas Biercher Beginn -->
-
 <?php
+// Nicolas Biercher Beginn
 
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
@@ -29,25 +28,7 @@ class TeamRegistrierung extends Dbh {
         return true;
     }
 
-    public function registrieren(
-    string $teamname,
-    string $vorname,
-    string $nachname,
-    string $loginname,
-    string $kennwort,
-    string $kennwort_bestaetigung): ?string {
-
-        if ($kennwort !== $kennwort_bestaetigung) {
-            return "Kennwörter stimmen nicht überein";
-        }
-
-        $pruefung = $this->istKennwortSicher($kennwort);
-        if ($pruefung !== true) {
-            return $pruefung;
-        }
-
-        $db = $this->connect();
-
+    private function teamExistiertBereits(PDO $db, string $teamname, string $loginname): ?string {
         $stmt = $db->prepare("SELECT TeamchefLoginName FROM Teamchef WHERE TeamchefLoginName = ?");
         $stmt->execute([$loginname]);
         if ($stmt->fetch()) {
@@ -60,11 +41,19 @@ class TeamRegistrierung extends Dbh {
             return "Teamname existiert bereits";
         }
 
-        $hash = password_hash($kennwort, PASSWORD_DEFAULT);
+        return null;
+    }
+
+    private function teamInDatenbankEintragen(
+        PDO    $db,
+        string $teamname,
+        string $loginname,
+        string $vorname,
+        string $nachname,
+        string $hash): void {
+        $db->beginTransaction();
 
         try {
-            $db->beginTransaction();
-
             $db->prepare("INSERT INTO Teamchef (TeamchefLoginName, Kennwort, Vorname, Nachname) VALUES (?, ?, ?, ?)")
                ->execute([$loginname, $hash, $vorname, $nachname]);
 
@@ -72,15 +61,41 @@ class TeamRegistrierung extends Dbh {
                ->execute([$teamname, $loginname]);
 
             $db->commit();
-            return null;
-
         } catch (PDOException $e) {
             $db->rollBack();
             throw $e;
         }
     }
+
+    public function registrieren(
+        string $teamname,
+        string $vorname,
+        string $nachname,
+        string $loginname,
+        string $kennwort,
+        string $kennwort_bestaetigung): ?string {
+
+        if ($kennwort !== $kennwort_bestaetigung) {
+            return "Kennwörter stimmen nicht überein";
+        }
+
+        $pruefung = $this->istKennwortSicher($kennwort);
+        if ($pruefung !== true) {
+            return $pruefung;
+        }
+
+        $db = $this->connect();
+
+        $fehler = $this->teamExistiertBereits($db, $teamname, $loginname);
+        if ($fehler !== null) {
+            return $fehler;
+        }
+
+        $hash = password_hash($kennwort, PASSWORD_DEFAULT);
+        $this->teamInDatenbankEintragen($db, $teamname, $loginname, $vorname, $nachname, $hash);
+
+        return null;
+    }
 }
 
-?>
-
-<!-- Nicolas Biercher Ende -->
+// Nicolas Biercher Ende

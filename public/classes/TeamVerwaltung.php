@@ -1,6 +1,5 @@
-<!-- Nicolas Biercher Beginn -->
-
 <?php
+// Nicolas Biercher Beginn
 
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
@@ -92,7 +91,32 @@ class TeamVerwaltung extends Dbh {
         return $abfrage->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function fahrerNeuAnlegen(
+    public function fahrerSpeichern(
+        ?int   $mitarbeiter_id,
+        string $vorname,
+        string $nachname,
+        string $strasse,
+        string $hausnummer,
+        string $telefonnummer,
+        string $plz,
+        string $ort,
+        string $teamname): array {
+        if ($mitarbeiter_id !== null) {
+            $this->fahrerDatenAktualisieren(
+                $mitarbeiter_id, $vorname, $nachname, $strasse,
+                $hausnummer, $telefonnummer, $plz, $ort, $teamname
+            );
+            return ['erfolg' => 1, 'meldung' => 'Fahrer wurde erfolgreich geändert.'];
+        }
+
+        $ergebnis = $this->fahrerNeuAnlegen(
+            $vorname, $nachname, $strasse, $hausnummer,
+            $telefonnummer, $plz, $ort, $teamname
+        );
+        return $ergebnis ?: ['erfolg' => 0, 'meldung' => 'Fahrer konnte nicht angelegt werden.'];
+    }
+
+    private function fahrerNeuAnlegen(
         string $vorname,
         string $nachname,
         string $strasse,
@@ -132,7 +156,7 @@ class TeamVerwaltung extends Dbh {
         }
     }
 
-    public function fahrerDatenAktualisieren(
+    private function fahrerDatenAktualisieren(
         int    $mitarbeiter_id,
         string $vorname,
         string $nachname,
@@ -185,6 +209,4 @@ class TeamVerwaltung extends Dbh {
     }
 }
 
-?>
-
-<!-- Nicolas Biercher Ende -->
+// Nicolas Biercher Ende

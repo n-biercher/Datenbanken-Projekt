@@ -1,5 +1,3 @@
-<!-- Nicolas Biercher Beginn -->
-
 <?php
 
 include_once('include/session_management.php');
@@ -93,24 +91,13 @@ if (isset($_POST['fahrer_speichern'])) {
             $fehler = implode(" ", $fehlerliste);
         } else {
             try {
-                if ($bearbeitungsmodus) {
-                    if ($formulardaten['mitarbeiter_id'] === '') {
-                        $fehler = "Mitarbeiter-ID fehlt.";
-                    } else {
-                        $meldung = $verwaltung->fahrerDatenAktualisieren(
-                            (int) $formulardaten['mitarbeiter_id'],
-                            $formulardaten['vorname'],
-                            $formulardaten['nachname'],
-                            $formulardaten['strasse'],
-                            $formulardaten['hausnummer'],
-                            $formulardaten['telefonnummer'],
-                            $formulardaten['plz'],
-                            $formulardaten['ort'],
-                            $teamname
-                        );
-                    }
+                if ($bearbeitungsmodus && $formulardaten['mitarbeiter_id'] === '') {
+                    $fehler = "Mitarbeiter-ID fehlt.";
                 } else {
-                    $ergebnis = $verwaltung->fahrerNeuAnlegen(
+                    $mitarbeiter_id = $bearbeitungsmodus ? (int) $formulardaten['mitarbeiter_id'] : null;
+
+                    $ergebnis = $verwaltung->fahrerSpeichern(
+                        $mitarbeiter_id,
                         $formulardaten['vorname'],
                         $formulardaten['nachname'],
                         $formulardaten['strasse'],
@@ -121,14 +108,13 @@ if (isset($_POST['fahrer_speichern'])) {
                         $teamname
                     );
 
-                    if ($ergebnis && isset($ergebnis['erfolg']) && $ergebnis['erfolg'] == 1) {
+                    if ($ergebnis['erfolg'] == 1) {
                         $meldung = $ergebnis['meldung'];
-
-                        $formulardaten = leereFormulardaten();
-                    } elseif ($ergebnis && isset($ergebnis['meldung'])) {
-                        $fehler = $ergebnis['meldung'];
+                        if (!$bearbeitungsmodus) {
+                            $formulardaten = leereFormulardaten();
+                        }
                     } else {
-                        $fehler = "Der Fahrer konnte nicht angelegt werden.";
+                        $fehler = $ergebnis['meldung'];
                     }
                 }
             } catch (PDOException $e) {
@@ -172,6 +158,7 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team verwalten</title>
+    <!-- Nicolas Biercher Beginn -->
 </head>
     <body>
 
@@ -192,7 +179,7 @@ try {
         </h2>
 
         <form action="" method="POST">
-            <input type="hidden" name="csrf_token"        value="<?php echo $_SESSION['csrf_token']; ?>">
+            <input type="hidden" name="csrf_token"        value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <input type="hidden" name="bearbeitungsmodus" value="<?php echo $bearbeitungsmodus ? '1' : '0'; ?>">
 
             <?php if ($bearbeitungsmodus): ?>
@@ -276,7 +263,7 @@ try {
                             <a href="team_verwalten.php?bearbeiten=<?php echo urlencode($verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID')); ?>">Bearbeiten</a>
 
                             <form action="" method="POST">
-                                <input type="hidden" name="csrf_token"     value="<?php echo $_SESSION['csrf_token']; ?>">
+                                <input type="hidden" name="csrf_token"     value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                                 <input type="hidden" name="mitarbeiter_id" value="<?php echo $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID'); ?>">
                                 <input type="submit" name="fahrer_loeschen" value="Löschen" onclick="return confirm('Soll dieser Fahrer wirklich gelöscht werden?');">
                             </form>
