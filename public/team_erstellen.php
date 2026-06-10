@@ -14,11 +14,11 @@ if (isset($_POST['registrieren'])) {
     if (!csrfTokenGueltig()) {
         $fehler = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
-        $teamname      = trim($_POST['teamname']         ?? '');
-        $vorname       = trim($_POST['vorname']          ?? '');
-        $nachname      = trim($_POST['nachname']         ?? '');
-        $loginname     = trim($_POST['loginname']        ?? '');
-        $kennwort      = $_POST['kennwort']              ?? '';
+        $teamname = trim($_POST['teamname'] ?? '');
+        $vorname = trim($_POST['vorname'] ?? '');
+        $nachname = trim($_POST['nachname'] ?? '');
+        $loginname = trim($_POST['loginname'] ?? '');
+        $kennwort = $_POST['kennwort'] ?? '';
         $kennwort_best = $_POST['kennwort_bestaetigung'] ?? '';
 
         if (empty($teamname) || empty($vorname) || empty($nachname) || empty($loginname) || empty($kennwort) || empty($kennwort_best)) {
@@ -27,12 +27,12 @@ if (isset($_POST['registrieren'])) {
             $fehler = "Loginname darf maximal 50 Zeichen lang sein!";
         } else {
             try {
-                $reg    = new TeamRegistrierung();
+                $reg = new TeamRegistrierung();
                 $fehler = $reg->registrieren($teamname, $vorname, $nachname, $loginname, $kennwort, $kennwort_best);
 
                 if ($fehler === null) {
                     $meldung = "Registrierung erfolgreich!";
-                    $fehler  = '';
+                    $fehler = '';
                 }
             } catch (PDOException $e) {
                 $fehler = "Fehler bei der Registrierung.";

@@ -11,22 +11,22 @@ sitzungStarten();
 zugriffPruefen('teamchef_loginname');
 
 $teamchef_loginname = $_SESSION['teamchef_loginname'];
-$verwaltung         = new TeamVerwaltung();
+$verwaltung = new TeamVerwaltung();
 
-$meldung           = "";
-$fehler            = "";
+$meldung = "";
+$fehler = "";
 $bearbeitungsmodus = false;
 
 function leereFormulardaten(): array {
     return [
         'mitarbeiter_id' => '',
-        'vorname'        => '',
-        'nachname'       => '',
-        'strasse'        => '',
-        'hausnummer'     => '',
-        'telefonnummer'  => '',
-        'plz'            => '',
-        'ort'            => ''
+        'vorname' => '',
+        'nachname' => '',
+        'strasse' => '',
+        'hausnummer' => '',
+        'telefonnummer' => '',
+        'plz' => '',
+        'ort' => ''
     ];
 }
 
@@ -58,13 +58,13 @@ if (isset($_GET['bearbeiten'])) {
                 $bearbeitungsmodus = true;
 
                 $formulardaten['mitarbeiter_id'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Mitarbeiter-ID');
-                $formulardaten['vorname']        = $verwaltung->sicherenWertAuslesen($fahrer, 'Vorname');
-                $formulardaten['nachname']       = $verwaltung->sicherenWertAuslesen($fahrer, 'Nachname');
-                $formulardaten['strasse']        = $verwaltung->sicherenWertAuslesen($fahrer, 'Straße');
-                $formulardaten['hausnummer']     = $verwaltung->sicherenWertAuslesen($fahrer, 'Hausnummer');
-                $formulardaten['telefonnummer']  = $verwaltung->sicherenWertAuslesen($fahrer, 'Telefonnummer');
-                $formulardaten['plz']            = $verwaltung->sicherenWertAuslesen($fahrer, 'PLZ');
-                $formulardaten['ort']            = $verwaltung->sicherenWertAuslesen($fahrer, 'Ort');
+                $formulardaten['vorname'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Vorname');
+                $formulardaten['nachname'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Nachname');
+                $formulardaten['strasse'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Straße');
+                $formulardaten['hausnummer'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Hausnummer');
+                $formulardaten['telefonnummer'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Telefonnummer');
+                $formulardaten['plz'] = $verwaltung->sicherenWertAuslesen($fahrer, 'PLZ');
+                $formulardaten['ort'] = $verwaltung->sicherenWertAuslesen($fahrer, 'Ort');
             } else {
                 $fehler = "Fahrer wurde nicht gefunden.";
             }
@@ -79,13 +79,13 @@ if (isset($_POST['fahrer_speichern'])) {
         $fehler = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } else {
         $formulardaten['mitarbeiter_id'] = $verwaltung->postWertLesen('mitarbeiter_id');
-        $formulardaten['vorname']        = $verwaltung->postWertLesen('vorname');
-        $formulardaten['nachname']       = $verwaltung->postWertLesen('nachname');
-        $formulardaten['strasse']        = $verwaltung->postWertLesen('strasse');
-        $formulardaten['hausnummer']     = $verwaltung->postWertLesen('hausnummer');
-        $formulardaten['telefonnummer']  = $verwaltung->postWertLesen('telefonnummer');
-        $formulardaten['plz']            = $verwaltung->postWertLesen('plz');
-        $formulardaten['ort']            = $verwaltung->postWertLesen('ort');
+        $formulardaten['vorname'] = $verwaltung->postWertLesen('vorname');
+        $formulardaten['nachname'] = $verwaltung->postWertLesen('nachname');
+        $formulardaten['strasse'] = $verwaltung->postWertLesen('strasse');
+        $formulardaten['hausnummer'] = $verwaltung->postWertLesen('hausnummer');
+        $formulardaten['telefonnummer'] = $verwaltung->postWertLesen('telefonnummer');
+        $formulardaten['plz'] = $verwaltung->postWertLesen('plz');
+        $formulardaten['ort'] = $verwaltung->postWertLesen('ort');
 
         $bearbeitungsmodus = isset($_POST['bearbeitungsmodus']) && $_POST['bearbeitungsmodus'] === '1';
 
@@ -152,7 +152,7 @@ try {
     $alle_fahrer = $verwaltung->alleFahrerDesTeamsLaden($teamname);
 } catch (PDOException $e) {
     $alle_fahrer = [];
-    $fehler      = "Fehler beim Laden der Fahrer.";
+    $fehler = "Fehler beim Laden der Fahrer.";
 }
 ?>
 
@@ -236,7 +236,7 @@ try {
 
         <h2>Alle Fahrer</h2>
 
-        <table border="1" cellpadding="6" cellspacing="0">
+        <table>
             <tr>
                 <th>Mitarbeiter-ID</th>
                 <th>Vorname</th>
