@@ -64,10 +64,10 @@ function sitzungBeenden(): void
     session_destroy();
 }
 
-function zugriffPruefen(string $sitzungsschluessel, string $weiterleitungsziel = 'index.php?fehler=kein_zugriff'): void
+function zugriffPruefen(string $sitzungsschluessel): void
 {
     if (!isset($_SESSION[$sitzungsschluessel])) {
-        header("Location: $weiterleitungsziel");
+        header("Location: index.php?fehler=kein_zugriff");
         exit();
     }
 }

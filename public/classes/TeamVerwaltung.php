@@ -102,11 +102,13 @@ class TeamVerwaltung extends Dbh {
         string $ort,
         string $teamname): array {
         if ($mitarbeiter_id !== null) {
-            $this->fahrerDatenAktualisieren(
+            $aktualisiert = $this->fahrerDatenAktualisieren(
                 $mitarbeiter_id, $vorname, $nachname, $strasse,
                 $hausnummer, $telefonnummer, $plz, $ort, $teamname
             );
-            return ['erfolg' => 1, 'meldung' => 'Fahrer wurde erfolgreich geändert.'];
+            return $aktualisiert
+                ? ['erfolg' => 1, 'meldung' => 'Fahrer wurde erfolgreich geändert.']
+                : ['erfolg' => 0, 'meldung' => 'Fahrer wurde nicht gefunden.'];
         }
 
         $ergebnis = $this->fahrerNeuAnlegen(
@@ -165,7 +167,7 @@ class TeamVerwaltung extends Dbh {
         string $telefonnummer,
         string $plz,
         string $ort,
-        string $teamname): string {
+        string $teamname): bool {
         $abfrage = $this->connect()->prepare("
             UPDATE Fahrer
             SET
@@ -191,7 +193,7 @@ class TeamVerwaltung extends Dbh {
             $teamname
         ]);
 
-        return "Fahrer wurde erfolgreich geändert.";
+        return $abfrage->rowCount() > 0;
     }
 
     public function fahrerAusTeamEntfernen(int $mitarbeiter_id, string $teamname): string {

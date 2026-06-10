@@ -1,4 +1,5 @@
 <?php
+// Nicolas Biercher Beginn
 
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
@@ -31,3 +32,5 @@ class TeamchefLogin extends Dbh {
         return "Loginname oder Kennwort ist falsch.";
     }
 }
+
+// Nicolas Biercher Ende

@@ -1,4 +1,5 @@
 <?php
+// Nicolas Biercher Beginn
 include_once('include/session_management.php');
 include_once('classes/TeamchefLogin.php');
 sitzungStarten();
