@@ -17,7 +17,14 @@ if (isset($_GET['fehler'])) {
         $fehler = 'Kein Zugriff. Bitte melde dich zuerst an.';
     } elseif ($_GET['fehler'] === 'kein_team') {
         $fehler = 'Deinem Account ist kein Team zugeordnet.';
+    } elseif ($_GET['fehler'] === 'ungueltige_anfrage') {
+        $fehler = 'Ungültige Anfrage. Bitte die Seite neu laden.';
     }
+}
+
+$status = '';
+if (isset($_GET['status']) && $_GET['status'] === 'abgemeldet') {
+    $status = 'Du wurdest erfolgreich abgemeldet.';
 }
 ?>
 
@@ -34,6 +41,10 @@ if (isset($_GET['fehler'])) {
 
 <?php if (!empty($fehler)): ?>
     <p style="color: red;"><b><?php echo htmlspecialchars($fehler); ?></b></p>
+<?php endif; ?>
+
+<?php if (!empty($status)): ?>
+    <p style="color: green;"><b><?php echo htmlspecialchars($status); ?></b></p>
 <?php endif; ?>
 
 <?php if (isset($_SESSION['teamchef_loginname'])): ?>
