@@ -1,4 +1,3 @@
-
 <?php
 /* * Ergebniserfassung Klasse
  * Lena Strohmenger Beginn
@@ -77,14 +76,8 @@ class Ergebniserfassung extends Dbh
 
             $stmt = $verbindung->prepare($sql);
 
-            foreach ($ergebnisse as $mitarbeiter_id => $daten) {
-                $stmt->execute([
-                    $daten['platzierung'],
-                    $daten['zeit'],
-                    $renn_id,
-                    $mitarbeiter_id,
-                    $daten['teamname']
-                ]);
+            foreach ($ergebnisse as $daten) {
+                $stmt->execute([$daten['platzierung'], $daten['zeit'], $renn_id, $daten['mitarbeiter_id'], $daten['teamname']]);
             }
 
             $verbindung->commit();

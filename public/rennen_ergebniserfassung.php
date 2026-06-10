@@ -1,4 +1,3 @@
-
 <?php
 /* Lena Strohmenger Beginn 
 Seite auf der Rennveranstalter Ergebnisse erfassen können*/
@@ -57,19 +56,24 @@ if (isset($_POST['ergebnisse_speichern'])) {
 
         $fahrer_daten = [];
         foreach ($fahrer_liste as $fahrer) {
-            $fahrer_daten[$fahrer['MitarbeiterId']] = $fahrer['Teamname'];
+            $fahrer_key = $fahrer['MitarbeiterId'] . '_' . str_replace(' ', '_', $fahrer['Teamname']);
+
+            $fahrer_daten[$fahrer_key] = [
+                'mitarbeiter_id' => $fahrer['MitarbeiterId'],
+                'teamname' => $fahrer['Teamname']
+            ];
         }
 
         $max_platzierung = count($fahrer_liste);
 
-        foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-            if (!isset($fahrer_daten[$mitarbeiter_id])) {
+        foreach ($_POST['fahrer_keys'] as $fahrer_key) {
+            if (!isset($fahrer_daten[$fahrer_key])) {
                 $fehlermeldung = "Ungültiger Fahrer übermittelt.";
                 $fehler = true;
                 break;
             }
-            $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
-            $zeit = $_POST['zeit_' . $mitarbeiter_id];
+            $platzierung = $_POST['platzierung_' . $fahrer_key];
+            $zeit = $_POST['zeit_' . $fahrer_key];
 
             if (empty($platzierung) || empty($zeit)) {
                 $fehlermeldung = "Bitte fülle alle Platzierungen und Zeiten aus.";
@@ -77,7 +81,7 @@ if (isset($_POST['ergebnisse_speichern'])) {
                 break;
             }
             if ($platzierung < 1 || $platzierung > $max_platzierung) {
-                $fehlermeldung = "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
+                $fehlermeldung = "Ungültige Platzierung für Mitarbeiter-ID";
                 $fehler = true;
                 break;
             }
@@ -88,14 +92,16 @@ if (isset($_POST['ergebnisse_speichern'])) {
             }
             $vergebene_platzierungen[] = $platzierung;
         }
-
         if (!$fehler) {
             $ergebnisse = [];
-            foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
-                $ergebnisse[$mitarbeiter_id] = [
-                    'platzierung' => $_POST['platzierung_' . $mitarbeiter_id],
-                    'zeit' => $_POST['zeit_' . $mitarbeiter_id],
-                    'teamname' => $fahrer_daten[$mitarbeiter_id]
+
+            foreach ($_POST['fahrer_keys'] as $fahrer_key) {
+
+                $ergebnisse[] = [
+                    'mitarbeiter_id' => $fahrer_daten[$fahrer_key]['mitarbeiter_id'],
+                    'teamname' => $fahrer_daten[$fahrer_key]['teamname'],
+                    'platzierung' => $_POST['platzierung_' . $fahrer_key],
+                    'zeit' => $_POST['zeit_' . $fahrer_key]
                 ];
             }
 
@@ -205,7 +211,8 @@ if (isset($_POST['ergebnisse_speichern'])) {
                     echo '<td>' . htmlentities($fahrer['Teamname']) . '</td>';
 
                     echo '<td>';
-                    echo '<select name="platzierung_' . $fahrer['MitarbeiterId'] . '" required>';
+                    $fahrer_key = $fahrer['MitarbeiterId'] . '_' . str_replace(' ', '_', $fahrer['Teamname']);
+                    echo '<select name="platzierung_' . $fahrer_key . '" required>';
                     echo '<option value="">Bitte wählen</option>';
 
                     for ($platz = 1; $platz <= count($fahrer_liste); $platz++) {
@@ -215,9 +222,9 @@ if (isset($_POST['ergebnisse_speichern'])) {
                     echo '</select>';
                     echo '</td>';
 
-                    echo '<td><input type="time" name="zeit_' . $fahrer['MitarbeiterId'] . '" step="1" required></td>';
+                    echo '<td><input type="time" name="zeit_' . $fahrer_key . '" step="1" required></td>';
 
-                    echo '<input type="hidden" name="mitarbeiter_ids[]" value="' . $fahrer['MitarbeiterId'] . '">';
+                    echo '<input type="hidden" name="fahrer_keys[]" value="' . $fahrer_key . '">';
 
 
                     echo '</tr>';
