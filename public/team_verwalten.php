@@ -1,5 +1,8 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Verwaltungsseite für Fahrer eines Teams
+ * Nicolas Biercher
+ */
 
 include_once('include/session_management.php');
 include_once('classes/TeamVerwaltung.php');
@@ -159,7 +162,6 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team verwalten</title>
-    <!-- Nicolas Biercher Beginn -->
 </head>
     <body>
 

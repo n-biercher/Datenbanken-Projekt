@@ -1,5 +1,8 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Startseite des Portals mit unterschiedlicher Navigation für verschiedene Nutzer
+ * Nicolas Biercher
+ */
 include_once('include/session_management.php');
 sitzungStarten();
 
@@ -24,7 +27,6 @@ if (isset($_GET['fehler'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Portal – Radrennen</title>
-    <!-- Nicolas Biercher Beginn -->
 </head>
 <body>
 

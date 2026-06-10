@@ -1,5 +1,8 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Abmeldelogik
+ * Nicolas Biercher
+ */
 include_once('include/session_management.php');
 sitzungStarten();
 

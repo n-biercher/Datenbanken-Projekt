@@ -1,6 +1,10 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Authentifizierung eines Teamchefs
+ * Nicolas Biercher
+ */
 
+// Direktaufruf über den Browser verhindern
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
     exit();

@@ -242,6 +242,8 @@ BEGIN
     END IF;
 
     IF v_erfolg = 1 THEN
+        -- FOR UPDATE sperrt die betroffenen Zeilen, damit bei gleichzeitigen Inserts
+        -- keine zwei Fahrer dieselbe Mitarbeiter-ID innerhalb des Teams erhalten
         SELECT COALESCE(MAX(`Mitarbeiter-ID`), 0) + 1
         INTO v_neue_mitarbeiter_id
         FROM Fahrer

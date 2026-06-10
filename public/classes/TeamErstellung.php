@@ -1,6 +1,10 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Registrierung eines neuen Teams inkl. Teamchef, wobei die Formulardaten geprüft werden
+ * Nicolas Biercher
+ */
 
+// Direktaufruf über den Browser verhindern
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
     exit();
@@ -51,6 +55,7 @@ class TeamRegistrierung extends Dbh {
         string $vorname,
         string $nachname,
         string $hash): void {
+        // Teamchef und Team gemeinsam anlegen; bei Fehler wird beides zurückgerollt
         $db->beginTransaction();
 
         try {

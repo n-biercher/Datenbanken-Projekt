@@ -1,5 +1,8 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Formular und Verarbeitung zur Registrierung eines neuen Teams.
+ * Nicolas Biercher
+ */
 include_once('include/session_management.php');
 sitzungStarten();
 include_once('classes/TeamErstellung.php');
@@ -44,7 +47,6 @@ if (isset($_POST['registrieren'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team erstellen</title>
-    <!-- Nicolas Biercher Beginn -->
 </head>
 <body>
 

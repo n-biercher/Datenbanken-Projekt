@@ -1,5 +1,8 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * Login-Formular für Teamchefs
+ * Nicolas Biercher
+ */
 include_once('include/session_management.php');
 include_once('classes/TeamchefLogin.php');
 sitzungStarten();
@@ -30,7 +33,6 @@ if (isset($_POST['login'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Teamchef anmelden</title>
-    <!-- Nicolas Biercher Beginn -->
 </head>
 
 <body>

@@ -1,35 +1,40 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * 
+ * Nicolas Biercher
+ */
 
+// Direktaufruf über den Browser verhindern
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
     exit();
 }
 
-define('SITZUNG_TIMEOUT_SEKUNDEN', 1800); // 30 Minuten Inaktivität
+define('SITZUNG_TIMEOUT_SEKUNDEN', 1800);
 
 function sitzungStarten(): void
 {
     session_start();
 
-    // neue Sitzungs-ID beim ersten Start vergeben
+    // Session-ID beim ersten Aufruf neu vergeben
     if (empty($_SESSION['sitzung_gestartet'])) {
         session_regenerate_id(true);
         $_SESSION['sitzung_gestartet'] = true;
     }
 
-    // Fingerabdruck aus Browser und IP initialisieren
+    // Fingerabdruck aus User-Agent und IP-Adresse
     $fingerabdruck = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . $_SERVER['REMOTE_ADDR']);
 
     if (empty($_SESSION['fingerabdruck'])) {
         $_SESSION['fingerabdruck'] = $fingerabdruck;
     } elseif (!hash_equals($_SESSION['fingerabdruck'], $fingerabdruck)) {
+        // Die Sitzung wird beendet, wenn der Fingerabdruck nicht zu dem der Session passt
         sitzungBeenden();
         header("Location: index.php?fehler=sitzung_ungueltig");
         exit();
     }
 
-    // Sitzungs-Timeout prüfen
+    // Inaktivitäts-Timeout prüfen: Sitzung nach 30 Minuten ohne Aktivität beenden
     if (!empty($_SESSION['letzte_aktivitaet'])) {
         $inaktiv_seit = time() - $_SESSION['letzte_aktivitaet'];
 
@@ -40,10 +45,9 @@ function sitzungStarten(): void
         }
     }
 
-    // Zeitstempel der letzten Aktivität aktualisieren
     $_SESSION['letzte_aktivitaet'] = time();
 
-    // CSRF-Token generieren, falls noch nicht vorhanden
+    // CSRF-Token einmal pro Sitzung setzen
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }

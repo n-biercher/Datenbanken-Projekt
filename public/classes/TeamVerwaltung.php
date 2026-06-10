@@ -1,6 +1,10 @@
 <?php
-// Nicolas Biercher Beginn
+/**
+ * CRUD-Operationen für Fahrer eines Teams sowie Hilfsfunktionen
+ * Nicolas Biercher
+ */
 
+// Direktaufruf über den Browser verhindern
 if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
     http_response_code(403);
     exit();
@@ -132,6 +136,7 @@ class TeamVerwaltung extends Dbh {
         $db->beginTransaction();
 
         try {
+            // Stored Procedure übernimmt die teamspezifische Mitarbeiter-ID-Vergabe
             $abfrage = $db->prepare("
                 CALL fahrer_anlegen(?, ?, ?, ?, ?, ?, ?, ?)
             ");
