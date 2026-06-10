@@ -1,6 +1,8 @@
-<!-- Lena Strohmenger Beginn -->
 
 <?php
+/* Lena Strohmenger Beginn 
+Seite auf der Rennveranstalter Ergebnisse erfassen können*/
+
 require_once('include/session_management.php');
 sitzungStarten();
 zugriffPruefen('veranstalter_loginname');
@@ -16,6 +18,7 @@ $vergebene_platzierungen = [];
 
 $fehlermeldung = "";
 $erfolgsmeldung = "";
+
 
 if (isset($_POST['rennen_auswaehlen'])) {
     if (!csrfTokenGueltig()) {

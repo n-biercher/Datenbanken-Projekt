@@ -1,6 +1,10 @@
-<!-- Lena Strohmenger Beginn -->
 
 <?php
+/* * Rennen Klasse
+ * Lena Strohmenger Beginn
+ * Verwaltet Rennen, die Anmeldung von Fahrern zu Rennen und das Kopieren von Teilnahmen von einem Rennen zu einem anderen Rennen
+ * Der Trigger startnummer_vergeben ist ebenfalls von mir erstellt worden 
+*/
 
 require_once('include/dbh.php');
 class Rennen extends Dbh
@@ -106,6 +110,7 @@ class Rennen extends Dbh
         return $stmt->fetchColumn() > 0;
     }
 
+    //Prüft ob ein Rennen zum Teamchef gehört
     public function rennenGehoertZuTeamchef($renn_id, $teamchef_loginname)
     {
         $sql = "SELECT COUNT(*)
@@ -120,9 +125,6 @@ class Rennen extends Dbh
 
         return $stmt->fetchColumn() > 0;
     }
-
-
-
 
     //Meldet einen Fahrer zu einem Rennen an
     public function fahrerAnmelden($fahrer_ids, $renn_id, $teamchef_loginname)
@@ -191,6 +193,7 @@ class Rennen extends Dbh
         }
     }
 }
+
+//Lena Strohmenger Ende
 ?>
 
-<!-- Lena Strohmenger Ende -->

@@ -1,10 +1,14 @@
-<!-- Lena Strohmenger Beginn -->
+
 <?php
+/* * Ergebniserfassung Klasse
+ * Lena Strohmenger Beginn
+ * Verwaltet die Erfassung von Ergebnissen durch Veranstalter
+ */
 require('include/dbh.php');
 
 class Ergebniserfassung extends Dbh
 {
-
+    //Holt die Rennen eines Veranstalters aus der Datenbank
     public function rennenHolen($veranstalter_loginname)
     {
         $sql = "SELECT *
@@ -24,7 +28,7 @@ class Ergebniserfassung extends Dbh
         return $stmt->fetchAll();
     }
 
-
+    //Holt die Fahrer, die an einem Rennen teilnehmen, aus der Datenbank
     public function fahrerZuRennenHolen($renn_id, $veranstalter_loginname)
     {
         $sql = "SELECT t.MitarbeiterId, t.Teamname, t.Startnummer, f.Vorname,f.Nachname
@@ -42,6 +46,7 @@ class Ergebniserfassung extends Dbh
         return $stmt->fetchAll();
     }
 
+    //Prüft, ob für ein Rennen bereits Ergebnisse erfasst wurden
     public function ergebnisseSchonErfasst($renn_id)
     {
         $sql = "SELECT COUNT(*)
@@ -55,6 +60,8 @@ class Ergebniserfassung extends Dbh
 
         return $stmt->fetchColumn() > 0;
     }
+
+    //Speichert die Ergebnisse eines Rennens in der Datenbank
     public function ergebnisseSpeichern($renn_id, $ergebnisse)
     {
         $verbindung = $this->connect();
@@ -90,6 +97,6 @@ class Ergebniserfassung extends Dbh
     }
 
 }
-?>
 
-<!-- Lena Strohmenger Ende -->
+//Lena Strohmenger Ende
+?>

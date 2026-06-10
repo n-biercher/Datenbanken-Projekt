@@ -1,6 +1,9 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
+/* Lena Strohmenger Beginn
+Seite auf der Teamchefs Fahrer anmelden können*/
+
 require_once('include/session_management.php');
 sitzungStarten();
 zugriffPruefen('teamchef_loginname');

@@ -1,4 +1,10 @@
+
 <?php 
+
+/* * Veranstalter Klasse
+ * Lena Strohmenger Beginn
+ * Verwaltet die Registrierung und Anmeldung von Veranstaltern
+ */
 
 require_once('include/dbh.php');
 class Veranstalter extends Dbh
@@ -77,3 +83,5 @@ class Veranstalter extends Dbh
         }
     }
 }
+//Lena Strohmenger Ende
+?>

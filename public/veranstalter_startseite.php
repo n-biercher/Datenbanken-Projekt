@@ -1,6 +1,8 @@
-<!-- Lena Strohmenger Beginn -->
 
 <?php
+/* Lena Strohmenger Beginn
+Seite auf der Veranstalter Rennen anlegen können */
+
 require_once('include/session_management.php');
 sitzungStarten();
 zugriffPruefen('veranstalter_loginname');

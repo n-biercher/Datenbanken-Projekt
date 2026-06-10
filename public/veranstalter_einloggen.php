@@ -1,6 +1,8 @@
-<!-- Lena Strohmenger Beginn -->
 
 <?php
+/* Lena Strohmenger Beginn
+Seite auf der Veranstalter sich einloggen oder neu registrieren können */
+
 require_once('include/session_management.php');
 sitzungStarten();
 
@@ -8,7 +10,6 @@ require_once('classes/Veranstalter.php');
 
 $fehlermeldung = "";
 
-// Registrierung
 if (isset($_POST['registrieren'])) {
     if (!csrfTokenGueltig()) {
         $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
@@ -36,7 +37,7 @@ if (isset($_POST['registrieren'])) {
     }
 }
 
-// Login
+
 if (isset($_POST['login'])) {
     if (!csrfTokenGueltig()) {
         $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
