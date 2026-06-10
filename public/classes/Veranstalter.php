@@ -1,6 +1,6 @@
 <?php 
 
-include_once('include/dbh.php');
+require_once('include/dbh.php');
 class Veranstalter extends Dbh
 {
 

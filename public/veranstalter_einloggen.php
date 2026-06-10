@@ -1,10 +1,10 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('include/session_management.php');
+require_once('include/session_management.php');
 sitzungStarten();
 
-include_once('classes/Veranstalter.php');
+require_once('classes/Veranstalter.php');
 
 $fehlermeldung = "";
 

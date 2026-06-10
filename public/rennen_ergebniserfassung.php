@@ -1,14 +1,14 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('include/session_management.php');
-sitzungStarten();
-zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
+require_once('include/session_management.php');
+sitzungStarten(); 
+zugriffPruefen('veranstalter_loginname'); 
 
-include_once('classes/Ergebniserfassung.php');
+require_once('classes/Ergebniserfassung.php');
 
-$erfassung_objekt = new Ergebniserfassung();
-$vergangeneRennen = $erfassung_objekt->vergangeneRennenHolen($_SESSION['veranstalter_loginname']);
+$erfassung_objekt = new Ergebniserfassung(); 
+$rennenListe = $erfassung_objekt-> rennenHolen($_SESSION['veranstalter_loginname']);
 
 $renn_id = "";
 $tabelle_anzeigen = false;
@@ -17,18 +17,18 @@ $vergebene_platzierungen = [];
 $fehlermeldung = "";
 $erfolgsmeldung = "";
 
-if (isset($_POST['rennen_auswaehlen'])) {
+if (isset($_POST['rennen_auswaehlen'])) { 
     if (!csrfTokenGueltig()) {
         $fehlermeldung = "Ungültige Anfrage. Bitte die Seite neu laden.";
     } elseif (!empty($_POST['rennid'])) {
-        $renn_id = $_POST['rennid'];
-        $tabelle_anzeigen = true;
+        $renn_id = $_POST['rennid']; 
+        $tabelle_anzeigen = true; 
     } else {
         $fehlermeldung = "Bitte wähle ein Rennen aus.";
     }
 }
 
-if ($tabelle_anzeigen) {
+if ($tabelle_anzeigen) { 
     $fahrer_liste = $erfassung_objekt->fahrerZuRennenHolen($renn_id, $_SESSION['veranstalter_loginname']);
 }
 
@@ -42,7 +42,7 @@ if (isset($_POST['ergebnisse_speichern'])) {
 
         $fehler = false;
 
-        if (empty($fahrer_liste)) {
+        if (empty($fahrer_liste)) { 
             $fehlermeldung = "Ungültiges Rennen oder keine Fahrer vorhanden.";
             $fehler = true;
         }
@@ -52,7 +52,7 @@ if (isset($_POST['ergebnisse_speichern'])) {
             $fahrer_daten[$fahrer['MitarbeiterId']] = $fahrer['Teamname'];
         }
 
-        $max_platzierung = count($fahrer_liste);
+        $max_platzierung = count($fahrer_liste); 
 
         foreach ($_POST['mitarbeiter_ids'] as $mitarbeiter_id) {
             if (!isset($fahrer_daten[$mitarbeiter_id])) {
@@ -63,17 +63,17 @@ if (isset($_POST['ergebnisse_speichern'])) {
             $platzierung = $_POST['platzierung_' . $mitarbeiter_id];
             $zeit = $_POST['zeit_' . $mitarbeiter_id];
 
-            if (empty($platzierung) || empty($zeit)) {
+            if (empty($platzierung) || empty($zeit)) { 
                 $fehlermeldung = "Bitte fülle alle Platzierungen und Zeiten aus.";
                 $fehler = true;
                 break;
             }
-            if ($platzierung < 1 || $platzierung > $max_platzierung) {
+            if ($platzierung < 1 || $platzierung > $max_platzierung) { 
                 $fehlermeldung = "Ungültige Platzierung für Mitarbeiter-ID: " . $mitarbeiter_id;
                 $fehler = true;
                 break;
             }
-            if (in_array($platzierung, $vergebene_platzierungen)) {
+            if (in_array($platzierung, $vergebene_platzierungen)) { 
                 $fehlermeldung = "Jede Platzierung darf nur einmal vergeben werden.";
                 $fehler = true;
                 break;
@@ -140,7 +140,7 @@ if (isset($_POST['ergebnisse_speichern'])) {
             <legend>Bitte wähle ein Rennen aus um die Ergbnisse zu erfassen</legend>
 
             <?php
-            foreach ($vergangeneRennen as $rennen) {
+            foreach ($rennenListe as $rennen) {
                 echo '<p>';
 
                 echo '<label>';
@@ -189,7 +189,7 @@ if (isset($_POST['ergebnisse_speichern'])) {
                 </tr>
 
                 <?php
-                foreach ($fahrer_liste as $fahrer) {
+                foreach ($fahrer_liste as $fahrer) { 
                     echo '<tr>';
 
                     echo '<td>' . $fahrer['Startnummer'] . '</td>';

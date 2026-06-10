@@ -2,7 +2,7 @@
 
 <?php
 
-include_once('include/dbh.php');
+require_once('include/dbh.php');
 class Rennen extends Dbh
 {
     //Neues Rennen anlegen
@@ -38,6 +38,30 @@ class Rennen extends Dbh
                 JOIN Team te ON f.Teamname = te.Teamname
                 WHERE te.TeamchefLoginName = ?
                 ORDER BY r.Datum DESC";
+
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([$teamchef_loginname]);
+        return $stmt->fetchAll();
+    }
+
+    //holt alle Rennen ohne Teilnahmen aus der Datenbank
+    public function rennenOhneTeilnahmenHolen($teamchef_loginname)
+    {
+        $sql = "SELECT r.*
+            FROM Rennen r
+            WHERE r.Datum >= CURDATE()
+            AND NOT EXISTS (
+                SELECT 1
+                FROM Teilnahme t
+                JOIN Fahrer f
+                    ON t.MitarbeiterId = f.`Mitarbeiter-ID`
+                    AND t.Teamname = f.Teamname
+                JOIN Team te
+                    ON f.Teamname = te.Teamname
+                WHERE t.RennId = r.RennId
+                AND te.TeamchefLoginName = ?
+            )
+            ORDER BY r.Datum ASC";
 
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([$teamchef_loginname]);
@@ -94,6 +118,9 @@ class Rennen extends Dbh
 
         return $stmt->fetchColumn() > 0;
     }
+
+
+
 
     //Meldet einen Fahrer zu einem Rennen an
     public function fahrerAnmelden($fahrer_ids, $renn_id, $teamchef_loginname)

@@ -1,17 +1,18 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('include/session_management.php');
+require_once('include/session_management.php');
 sitzungStarten();
-zugriffPruefen('teamchef_loginname', 'teamchef_anmelden.php');
+zugriffPruefen('teamchef_loginname');
 
-include_once('classes/Rennen.php');
+require_once('classes/Rennen.php');
 
 
 $rennen_objekt = new Rennen();
 $alle_rennen = $rennen_objekt->alleRennenHolen();
 $alle_fahrer = $rennen_objekt->alleFahrerHolen($_SESSION['teamchef_loginname']);
 $rennen_mit_teilnahmen = $rennen_objekt->rennenMitTeilnahmenHolen($_SESSION['teamchef_loginname']);
+$rennen_ohne_teilnahmen = $rennen_objekt->rennenOhneTeilnahmenHolen($_SESSION['teamchef_loginname']);
 
 $renn_id = "";
 $anzahl_fahrer = 0;
@@ -200,7 +201,7 @@ if (isset($_POST['kopieren'])) {
                                         $fahrerFullName = $fahrer['Vorname'] . ' ' . $fahrer['Nachname'];
                                         ?>
                                         <option value="<?php echo $fahrerIdValue; ?>">
-                                            <?php echo htmlentities($fahrerFullName); ?>
+                                            <?php echo htmlentities($fahrerFullName . ' - ID: ' . $fahrerIdValue); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -257,7 +258,7 @@ if (isset($_POST['kopieren'])) {
                         </td>
                         <td style="vertical-align:top">
                             <strong>Ziel-Rennen (wohin kopieren)</strong><br>
-                            <?php foreach ($alle_rennen as $rennen): ?>
+                            <?php foreach ($rennen_ohne_teilnahmen as $rennen): ?>
                                 <p>
                                     <label>
                                         <input type="radio" name="neues_rennen" value="<?php echo $rennen['RennId']; ?>">

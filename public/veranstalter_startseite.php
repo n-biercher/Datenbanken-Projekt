@@ -1,11 +1,11 @@
 <!-- Lena Strohmenger Beginn -->
 
 <?php
-include_once('include/session_management.php');
+require_once('include/session_management.php');
 sitzungStarten();
-zugriffPruefen('veranstalter_loginname', 'veranstalter_einloggen.php');
+zugriffPruefen('veranstalter_loginname');
 
-include_once('classes/Rennen.php');
+require_once('classes/Rennen.php');
 
 $fehlermeldung = "";
 $erfolgsmeldung = "";

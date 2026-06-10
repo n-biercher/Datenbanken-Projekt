@@ -1,14 +1,11 @@
 <!-- Lena Strohmenger Beginn -->
-
 <?php
-
-include_once('include/dbh.php');
-
+require('include/dbh.php');
 
 class Ergebniserfassung extends Dbh
 {
 
-    public function vergangeneRennenHolen($veranstalter_loginname)
+    public function rennenHolen($veranstalter_loginname)
     {
         $sql = "SELECT * 
             FROM Rennen 
